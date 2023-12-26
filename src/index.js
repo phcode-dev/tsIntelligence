@@ -1,44 +1,25 @@
-/*
- * GNU AGPL-3.0 License
- *
- * Copyright (c) 2021 - present core.ai . All rights reserved.
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU Affero General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License along
- * with this program. If not, see https://opensource.org/licenses/AGPL-3.0.
- *
- */
+import createTSServerInstance from './utils/startTsserver.js';
 
-// @INCLUDE_IN_API_DOCS
+const tsServer = createTSServerInstance();
 
-/**
- * Write your module docs here. tell something about this module in markdown.
- *
- * See https://github.com/aicore/template-nodejs/wiki/How-To-Write-Docs for more details on how to style docs.
- * ### Use markdown headings!
- * and markdown code!
- * ```js
- * console.log("write sample code examples with code blocks");
- * ```
- *
- * @module hello
- */
+// Initialize tsserver
+tsServer.init()
+    .then(() => {
+        console.log('tsserver is ready');
 
-/**
- * says hello world
- * @param name
- * @returns {string}
- * @type {function}
- */
-function helloWorld(name) {
-    return "Hello World " + name;
-}
+        // Path to the TypeScript file you want to open
+        const filePath = '/home/charly/repo/tsIntelligence/src/utils/startTsserver.js ';
 
-export default helloWorld;
+        // Open a TypeScript file
+        return tsServer.openFile(filePath, 10000); // Set a 10-second timeout for response
+    })
+    .then(response => {
+        console.log('File opened successfully:', response);
+        // Handle the response for opening the file
+
+        // Optionally, you can kill the server after processing the response
+        // tsServer.killServer();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
