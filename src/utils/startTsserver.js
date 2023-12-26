@@ -1,6 +1,6 @@
-import { spawn } from 'child_process';
+import {spawn} from 'child_process';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 /**
  * Creates a new instance of TypeScript Server.
@@ -24,6 +24,7 @@ function createTSServerInstance() {
 
             tsserverProcess.stdout.on('data', (data) => {
                 const lines = data.split('\n');
+                console.log(lines);
                 for (const line of lines) {
                     if (line.trim().startsWith('{')) {
                         const message = JSON.parse(line.trim());
@@ -50,22 +51,18 @@ function createTSServerInstance() {
             }, 10000); // 10 seconds timeout
         });
     }
+
     /**
      * Handles incoming data from the TypeScript Server.
      * @param {string} line - A line of data received from tsserver.
      */
     function onData(line) {
         try {
-            console.log(line);
             const response = JSON.parse(line);
-            // Check if it's a command response and has a matching sequence number
             if (response.request_seq !== undefined && pendingCommands.has(response.request_seq)) {
-                const { resolve } = pendingCommands.get(response.request_seq);
+                const {resolve} = pendingCommands.get(response.request_seq);
                 pendingCommands.delete(response.request_seq);
                 resolve(response);
-            } else if (response.type === 'event') {
-                // Handle or log event messages from tsserver
-                console.log('Event from tsserver:', response);
             }
         } catch (e) {
             console.error('Error parsing line from tsserver:', e);
@@ -74,32 +71,36 @@ function createTSServerInstance() {
 
     /**
      * Sends a command to the TypeScript Server.
+     * Special handling for 'open' command as it does not receive a response.
      * @param {Object} command - The command object to send.
      * @param {number} [timeout=5000] - The timeout in milliseconds for the command.
      * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
      */
     function sendCommand(command, timeout = 5000) {
+        if (command.command === "open") {
+            // For 'open' command, resolve immediately as no response is expected
+            tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
+            return Promise.resolve();
+        }
         return new Promise((resolve, reject) => {
             if (!tsserverProcess) {
                 reject(new Error('tsserver is not initialized'));
                 return;
             }
 
-            const seq = ++seqNumber;
-            pendingCommands.set(seq, { resolve, reject });
+            command.seq = ++seqNumber;
+            command.type = 'request';
+            pendingCommands.set(command.seq, {resolve, reject});
 
             const timeoutId = setTimeout(() => {
-                if (pendingCommands.has(seq)) {
-                    pendingCommands.delete(seq);
+                if (pendingCommands.has(command.seq)) {
+                    pendingCommands.delete(command.seq);
                     reject(new Error('tsserver response timeout'));
                 }
             }, timeout);
 
-            command.seq = seq;
-            command.type = 'request';
-            console.log(command);
-
             if (tsserverProcess.stdin.writable) {
+                console.log(command);
                 tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
             } else {
                 clearTimeout(timeoutId);
@@ -114,12 +115,51 @@ function createTSServerInstance() {
      * @param {number} timeout - The timeout in milliseconds for the command.
      * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
      */
-    function openFile(filePath, timeout) {
+    function openFile(filePath, timeout = 5000) {
         const command = {
             command: 'open',
-            arguments: { file: filePath }
+            arguments: {file: filePath}
         };
         return sendCommand(command, timeout);
+    }
+
+    /**
+     * Sends a 'definition' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getDefinition(filePath, line, offset) {
+        const command = {
+            command: "definition",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+
+    /**
+     * Sends a 'references' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function findReferences(filePath, line, offset) {
+        const command = {
+            command: "references",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
     }
 
     /**
@@ -133,7 +173,13 @@ function createTSServerInstance() {
         }
     }
 
-    return { init: initTSServer, openFile, killServer: killTSServer };
+    return {
+        init: initTSServer,
+        openFile,
+        killServer: killTSServer,
+        getDefinition: getDefinition,
+        findReferences: findReferences
+    };
 }
 
 export default createTSServerInstance;
