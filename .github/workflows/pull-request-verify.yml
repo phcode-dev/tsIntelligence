@@ -1,0 +1,28 @@
+name: Build verification on pull request
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Npm Install
+        run: |
+          npm ci
+      - name: eslint using npm run eslint
+        run: |
+          npm run lint
+      - name: building build
+        run: |
+          npm run build
+      - name: Unit tests with coverage
+        run: |
+          npm run cover:unit
+      - name: Running Integration tests
+        # SECURITY WARNING: Remove integration test run (this step) on pull request if any secret access is required to run integration tests.
+        # https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+        run: |
+          npm run test:integ
