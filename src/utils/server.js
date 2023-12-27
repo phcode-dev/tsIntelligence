@@ -18,7 +18,7 @@ function createTSServerInstance() {
         return new Promise((resolve, reject) => {
             const __dirname = path.dirname(fileURLToPath(import.meta.url));
             const tsserverPath = path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'bin', 'tsserver');
-            const nodePath = '/home/charly/.nvm/versions/node/v20.10.0/bin/node';
+            const nodePath = 'node';
             tsserverProcess = spawn(nodePath, [tsserverPath]);
             tsserverProcess.stdout.setEncoding('utf8');
 
@@ -142,6 +142,25 @@ function createTSServerInstance() {
         return sendCommand(command);
     }
 
+    /**
+     * Sends a 'quickinfo' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getQuickInfo(filePath, line, offset) {
+        const command = {
+            command: "quickinfo",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
 
     /**
      * Sends a 'references' request to the TypeScript Server.
@@ -153,6 +172,25 @@ function createTSServerInstance() {
     function findReferences(filePath, line, offset) {
         const command = {
             command: "references",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'FindSourceDefinition' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function findSourceDefinition(filePath, line, offset) {
+        const command = {
+            command: "findSourceDefinition",
             arguments: {
                 file: filePath,
                 line: line,
@@ -178,7 +216,9 @@ function createTSServerInstance() {
         openFile,
         killServer: killTSServer,
         getDefinition: getDefinition,
-        findReferences: findReferences
+        findReferences: findReferences,
+        getQuickInfo: getQuickInfo,
+        findSourceDefinition: findSourceDefinition
     };
 }
 
