@@ -12,7 +12,18 @@ function createTSServerInstance() {
     const pendingCommands = new Map();
 
     /**
-     * Initializes the TypeScript Server process.
+     * Initializes the TypeScript Server instance.
+     *
+     * This function starts a new process for the TypeScript Server using Node's `child_process.spawn`.
+     * It sets up listeners for the 'stdout' and 'stderr' streams of the TypeScript Server process,
+     * handling incoming data and errors respectively. It also handles the 'close' event of the process.
+     * The function configures a timeout to reject the promise if the server does not start within a specified time.
+     *
+     * @param {string} [node=""] - The path to the Node.js executable. If not provided, defaults to 'node'.
+     * @param {string} [tsServer=""] - The path to the TypeScript Server executable. If not provided,
+     *                                  defaults to the 'tsserver' path in the 'node_modules' directory.
+     * @returns {Promise<void>} A promise that resolves when the TypeScript Server is ready,
+     *                          or rejects if there is an error or timeout.
      */
     function initTSServer(node = "", tsServer = "") {
         return new Promise((resolve, reject) => {
