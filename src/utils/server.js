@@ -10,6 +10,9 @@ function createTSServerInstance() {
     let tsserverProcess = null;
     let seqNumber = 0;
     const pendingCommands = new Map();
+    let buffer = '';
+    let expectedLength = 0;
+    const CONNECT_MESSAGE_KEY = -1;
 
     /**
      * Initializes the TypeScript Server instance.
@@ -33,19 +36,9 @@ function createTSServerInstance() {
             tsserverProcess = spawn(nodePath, [tsserverPath]);
             tsserverProcess.stdout.setEncoding('utf8');
 
+            pendingCommands.set(CONNECT_MESSAGE_KEY, {resolve, reject});
             tsserverProcess.stdout.on('data', (data) => {
-                const lines = data.split('\n');
-                console.log(lines);
-                for (const line of lines) {
-                    if (line.trim().startsWith('{')) {
-                        const message = JSON.parse(line.trim());
-                        if (message.type === 'event' && message.event === 'typingsInstallerPid') {
-                            // Server is ready
-                            resolve();
-                        }
-                        onData(line);
-                    }
-                }
+                onData(data);
             });
 
             tsserverProcess.stderr.on('data', (data) => {
@@ -65,20 +58,64 @@ function createTSServerInstance() {
 
     /**
      * Handles incoming data from the TypeScript Server.
-     * @param {string} line - A line of data received from tsserver.
+     * @param {string} rawData - Raw data received from tsserver.
      */
-    function onData(line) {
+    function onData(rawData) {
+        buffer += rawData;
+        // Check if we have received the complete message based on Content-Length
+        while (hasCompleteMessage()) {
+            const headerEndIndex = buffer.indexOf('\r\n\r\n') + 4; // +4 to move past the \r\n\r\n
+            const message = buffer.substring(headerEndIndex, headerEndIndex + expectedLength);
+            buffer = buffer.substring(headerEndIndex + expectedLength);
+            expectedLength = 0; // Reset for the next message
+            processMessage(message);
+        }
+    }
+
+    /**
+     * Processes a complete message from tsserver.
+     * @param {string} message - A complete message in JSON format.
+     */
+    function processMessage(message) {
         try {
-            const response = JSON.parse(line);
+            console.log("++++++++++", message);
+            const response = JSON.parse(message);
+            if (response.type === 'event' && response.event === 'typingsInstallerPid') {
+                // Server is ready
+                const {resolve} = pendingCommands.get(CONNECT_MESSAGE_KEY);
+                pendingCommands.delete(CONNECT_MESSAGE_KEY);
+                resolve();
+                return;
+            }
+
             if (response.request_seq !== undefined && pendingCommands.has(response.request_seq)) {
                 const {resolve} = pendingCommands.get(response.request_seq);
                 pendingCommands.delete(response.request_seq);
                 resolve(response);
             }
         } catch (e) {
-            console.error('Error parsing line from tsserver:', e);
+            console.error('Error parsing message from tsserver:', e);
         }
     }
+
+    /**
+     * Checks if the buffer has a complete message based on Content-Length.
+     * @returns {boolean} True if a complete message is present in the buffer.
+     */
+    function hasCompleteMessage() {
+        if (!expectedLength) {
+            const headerEndIndex = buffer.indexOf('\r\n\r\n');
+            if (headerEndIndex !== -1) {
+                const header = buffer.substring(0, headerEndIndex);
+                const contentLengthMatch = header.match(/Content-Length: (\d+)/);
+                if (contentLengthMatch) {
+                    expectedLength = parseInt(contentLengthMatch[1], 10);
+                }
+            }
+        }
+        return buffer.length >= expectedLength + buffer.indexOf('\r\n\r\n') + 4; // +4 for header's \r\n\r\n
+    }
+
 
     /**
      * Sends a command to the TypeScript Server.
@@ -254,6 +291,25 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'completionInfo' command to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getCompletionInfo(filePath, line, offset) {
+        const command = {
+            command: "completionInfo",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Sends an 'exit' command to the TypeScript Server to gracefully shut it down.
      * @function exitServer
      */
@@ -291,6 +347,7 @@ function createTSServerInstance() {
         findReferences,
         getQuickInfo,
         findSourceDefinition,
+        getCompletionInfo,
         exitServer
     };
 }
