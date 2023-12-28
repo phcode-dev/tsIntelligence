@@ -6,7 +6,7 @@ await tsServer.init();
 console.log('server intializeed');
 
 for (let file of FILES) {
-    await tsServer.openFile(file.filepath);
+     tsServer.openFile(file.filepath);
 
     const definitonResp = await tsServer.getDefinition(file.filepath, file.definition.line, file.definition.offset);
     console.log("resp+++", JSON.stringify(definitonResp));
@@ -19,5 +19,10 @@ for (let file of FILES) {
 
     const findSourceDefinitionResp = await tsServer.findSourceDefinition(file.filepath, file.findSourceDefinition.line, file.findSourceDefinition.offset);
     console.log('findSourceDefinitionResp', JSON.stringify(findSourceDefinitionResp));
+
+    const completionInfoResp = await  tsServer.getCompletionInfo(file.filepath, file.getCompletionInfo.line, file.getCompletionInfo.offset);
+    console.assert('completionInfoResp', JSON.stringify(completionInfoResp));
+
+
 }
 tsServer.exitServer();
