@@ -135,6 +135,48 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'change' command to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {Object} start - The start position of the change (line and offset).
+     * @param {Object} end - The end position of the change (line and offset).
+     * @param {string} newText - The new text to replace in the range.
+     */
+    function sendChange(filePath, start, end, newText) {
+        const command = {
+            command: "change",
+            arguments: {
+                file: filePath,
+                line: start.line,
+                offset: start.offset,
+                endLine: end.line,
+                endOffset: end.offset,
+                insertString: newText
+            }
+        };
+        // The 'change' command does not require a response from the server
+        if (tsserverProcess && tsserverProcess.stdin.writable) {
+            tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
+        }
+    }
+
+    /**
+     * Sends a 'close' command to the TypeScript Server.
+     * @param {string} filePath - The path to the file being closed.
+     */
+    function closeFile(filePath) {
+        const command = {
+            command: "close",
+            arguments: {
+                file: filePath
+            }
+        };
+        // The 'close' command does not require a response from the server
+        if (tsserverProcess && tsserverProcess.stdin.writable) {
+            tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
+        }
+    }
+
+    /**
      * Sends a 'definition' request to the TypeScript Server.
      * @param {string} filePath - The path to the file.
      * @param {number} line - The line number of the position.
@@ -212,7 +254,24 @@ function createTSServerInstance() {
     }
 
     /**
-     * Kills the TypeScript Server process.
+     * Sends an 'exit' command to the TypeScript Server to gracefully shut it down.
+     * @function exitServer
+     */
+    function exitServer() {
+        if (tsserverProcess && tsserverProcess.stdin.writable) {
+            const command = {
+                command: "exit"
+            };
+            tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
+        }
+        tsserverProcess = null;
+    }
+
+    /**
+     * Terminates the TypeScript Server process.
+     * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
+     * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
+     * @function killTSServer
      */
     function killTSServer() {
         if (tsserverProcess) {
@@ -225,11 +284,14 @@ function createTSServerInstance() {
     return {
         init: initTSServer,
         openFile,
+        sendChange,
+        closeFile,
         killServer: killTSServer,
-        getDefinition: getDefinition,
-        findReferences: findReferences,
-        getQuickInfo: getQuickInfo,
-        findSourceDefinition: findSourceDefinition
+        getDefinition,
+        findReferences,
+        getQuickInfo,
+        findSourceDefinition,
+        exitServer
     };
 }
 

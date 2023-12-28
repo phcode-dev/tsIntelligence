@@ -20,3 +20,4 @@ for (let file of FILES) {
     const findSourceDefinitionResp = await tsServer.findSourceDefinition(file.filepath, file.findSourceDefinition.line, file.findSourceDefinition.offset);
     console.log('findSourceDefinitionResp', JSON.stringify(findSourceDefinitionResp));
 }
+tsServer.exitServer();
