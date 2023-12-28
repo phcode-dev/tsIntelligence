@@ -14,11 +14,11 @@ function createTSServerInstance() {
     /**
      * Initializes the TypeScript Server process.
      */
-    function initTSServer() {
+    function initTSServer(node = "", tsServer = "") {
         return new Promise((resolve, reject) => {
             const __dirname = path.dirname(fileURLToPath(import.meta.url));
-            const tsserverPath = path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'bin', 'tsserver');
-            const nodePath = 'node';
+            const tsserverPath = (tsServer) ? tsServer : path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'bin', 'tsserver');
+            const nodePath = (!node) ? 'node' : node;
             tsserverProcess = spawn(nodePath, [tsserverPath]);
             tsserverProcess.stdout.setEncoding('utf8');
 
