@@ -9,7 +9,13 @@ export const FILES = [{
     getCompletionInfo: {line: 20, offset: 52},
     getCompletionDetails: {line: 20, offset: 52},
     format: {line: 9, offset: 0, endLine: 44, endOffset: 0},
-    formatOnKey: {line: 44, offset: 154, key: ';'}
+    formatOnKey: {line: 44, offset: 154, key: ';'},
+    getErrors: {files: ['/home/charly/repo/tsIntelligence/src/test/sample/nonCompleteInit.js'], delay: 1000},
+    getErrorsForProject: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        delay: 100
+    },
+    getSemanticDiagnosticsSync: {filePath: '/home/charly/repo/tsIntelligence/src/test/sample/semantic.js'}
 
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -22,5 +28,15 @@ export const FILES = [{
     getCompletionInfo: {line: 40, offset: 40},
     getCompletionDetails: {line: 40, offset: 37},
     format: {line: 9, offset: 0, endLine: 44, endOffset: 0},
-    formatOnKey: {line: 23, offset: 76, key: ';'}
+    formatOnKey: {line: 23, offset: 76, key: ';'},
+    getErrors: {
+        files: ['/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'],
+        delay: 1000
+    },
+    getErrorsForProject: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        delay: 100
+    },
+    getSemanticDiagnosticsSync:
+        {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'}
 }];
