@@ -15,7 +15,20 @@ export const FILES = [{
         filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
         delay: 100
     },
-    getSemanticDiagnosticsSync: {filePath: '/home/charly/repo/tsIntelligence/src/test/sample/semantic.js'}
+    getSemanticDiagnosticsSync: {filePath: '/home/charly/repo/tsIntelligence/src/test/sample/semantic.ts'},
+    getSyntacticDiagnosticsSync: {filePath: '/home/charly/repo/tsIntelligence/src/test/sample/semantic.ts'},
+    getSuggestionDiagnosticsSync: {filePath: '/home/charly/repo/tsIntelligence/src/test/sample/semantic.ts'},
+    getNavBar: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js'},
+    navto: {searchValue: 'getImplementations'},
+    getNavTree: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js'},
+    getNavTreeFull: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js'},
+    documentHighlights: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 71,
+        offset: 50,
+        filesToSearch: ['/home/charly/repo/tsIntelligence/src/exp.js',
+            '/home/charly/repo/tsIntelligence/src/utils/server.js']
+    }
 
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -38,5 +51,20 @@ export const FILES = [{
         delay: 100
     },
     getSemanticDiagnosticsSync:
-        {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'}
+        {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    getSyntacticDiagnosticsSync:
+        {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    getSuggestionDiagnosticsSync:
+        {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    getNavBar: {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    navto: {searchValue: 'createSys'},
+    getNavTree: {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    getNavTreeFull: {filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    documentHighlights: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 38,
+        offset: 38,
+        filesToSearch: ['/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts']
+    }
+
 }];

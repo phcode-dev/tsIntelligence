@@ -47,12 +47,31 @@ for (let file of FILES) {
     for (const sample of file.getErrors.files) {
         await tsServer.openFile(sample);
     }
-    //await tsServer.getErrors(file.getErrors.files, file.getErrors.delay);
+    // await tsServer.getErrors(file.getErrors.files, file.getErrors.delay);
+    //
+    // await tsServer.getErrorsForProject(file.getErrorsForProject.filePath, file.getErrorsForProject.delay);
 
-    //await tsServer.getErrorsForProject(file.getErrorsForProject.filePath, file.getErrorsForProject.delay);
-
-   // await tsServer.openFile(file.getSemanticDiagnosticsSync.filePath);
+    await tsServer.openFile(file.getSemanticDiagnosticsSync.filePath);
     const getSemanticDiagnosticsSyncResp = await tsServer.getSemanticDiagnosticsSync(file.getSemanticDiagnosticsSync.filePath, true);
     console.log('getSemanticDiagnosticsSyncResp', JSON.stringify(getSemanticDiagnosticsSyncResp));
+    const getSyntacticDiagnosticsSyncResp = await tsServer.getSyntacticDiagnosticsSync(file.getSemanticDiagnosticsSync.filePath, true);
+    console.log('getSyntacticDiagnosticsSyncResp', JSON.stringify(getSyntacticDiagnosticsSyncResp));
+    const getSuggestionDiagnosticsSyncResp = await tsServer.getSuggestionDiagnosticsSync(file.getSuggestionDiagnosticsSync.filePath, true);
+    console.log('getSuggestionDiagnosticsSyncResp', JSON.stringify(getSuggestionDiagnosticsSyncResp));
+
+    const getNavBarResp = await tsServer.getNavBar(file.getNavBar.filePath);
+    console.log('getNavBarResp', JSON.stringify(getNavBarResp));
+
+    const navTorResp = await tsServer.navTo(file.navto.searchValue);
+    console.log('navTorResp', JSON.stringify(navTorResp));
+
+    const getNavTreeResp = await tsServer.getNavTree(file.getNavTree.filePath);
+    console.log('getNavTreeResp', JSON.stringify(getNavTreeResp));
+
+    const getNavTreeFullResp = await tsServer.getNavTree(file.getNavTreeFull.filePath);
+    console.log('getNavTreeFullResp', JSON.stringify(getNavTreeFullResp));
+
+    const documentHighlightsResp = await tsServer.documentHighlights(file.documentHighlights.filePath, file.documentHighlights.line, file.documentHighlights.offset, file.documentHighlights.filesToSearch);
+    console.log('documentHighlightsResp', JSON.stringify(documentHighlightsResp));
 }
 //tsServer.exitServer();

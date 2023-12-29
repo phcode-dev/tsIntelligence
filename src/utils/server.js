@@ -621,6 +621,7 @@ function createTSServerInstance() {
      *       to compute and return the diagnostics. The response is directly related to the current
      *       state of the file at the time of the request.
      */
+    // TODO: Revisit find working usecase
     function getSemanticDiagnosticsSync(filePath, includeLinePosition = false) {
         const command = {
             command: "semanticDiagnosticsSync",
@@ -631,6 +632,284 @@ function createTSServerInstance() {
         };
         return sendCommand(command);
     }
+
+    /**
+     * Sends a 'syntacticDiagnosticsSync' request to the TypeScript Server. This command is used
+     * to synchronously obtain syntactic diagnostic information (like parsing errors) for a specified file.
+     * Syntactic diagnostics are concerned with issues related to the parsing of the source code.
+     * This function is particularly useful for quickly identifying syntax errors in a TypeScript file.
+     *
+     * @param {string} filePath - The path to the TypeScript file. The path should be absolute
+     *                            or relative to the TypeScript server's current working directory.
+     * @param {boolean} [includeLinePosition=false] - Specifies whether to include line and character
+     *                                                position information in the diagnostics. When set to true,
+     *                                                each diagnostic includes detailed position information,
+     *                                                which is useful for displaying errors directly in an editor.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver containing syntactic
+     *                            diagnostics. The response is an array of diagnostic objects. Each diagnostic object
+     *                            typically contains:
+     *                            - `start`: The starting position of the diagnostic message.
+     *                            - `length`: The length of the diagnostic message.
+     *                            - `text`: The text of the diagnostic message.
+     *                            If `includeLinePosition` is true, the diagnostic object also includes:
+     *                            - `startLocation`: An object with line and character position of the start.
+     *                            - `endLocation`: An object with line and character position of the end.
+     *
+     * Example usage:
+     * ```
+     * getSyntacticDiagnosticsSync('path/to/file.ts', true).then(response => {
+     *   console.log('Syntactic diagnostics:', response);
+     * });
+     * ```
+     */
+    // TODO: Revisit find working usecase
+    function getSyntacticDiagnosticsSync(filePath, includeLinePosition = false) {
+        const command = {
+            command: "syntacticDiagnosticsSync",
+            arguments: {
+                file: filePath,
+                includeLinePosition: includeLinePosition
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'suggestionDiagnosticsSync' request to the TypeScript Server. This command is used
+     * to synchronously obtain suggestion diagnostic information for a specified file. Suggestion
+     * diagnostics include tips and hints that may not necessarily be errors or warnings but could
+     * suggest improvements or best practices in the code.
+     *
+     * @param {string} filePath - The path to the TypeScript file. This should be an absolute path
+     *                            or relative to the TypeScript server's current working directory.
+     * @param {boolean} [includeLinePosition=false] - Specifies whether to include line and character
+     *                                                position information in the diagnostics. When set to true,
+     *                                                each diagnostic includes detailed position information,
+     *                                                which is useful for displaying suggestions directly in an editor.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver containing
+     *                            suggestion diagnostics. The response is typically an array of diagnostic
+     *                            objects. Each diagnostic object includes:
+     *                            - `start`: The starting position of the diagnostic message.
+     *                            - `length`: The length of the diagnostic message.
+     *                            - `text`: The text of the diagnostic message.
+     *                            If `includeLinePosition` is true, the diagnostic object also includes:
+     *                            - `startLocation`: An object with line and character position of the start.
+     *                            - `endLocation`: An object with line and character position of the end.
+     *
+     * Example usage:
+     * ```
+     * getSuggestionDiagnosticsSync('path/to/file.ts', true).then(response => {
+     *   console.log('Suggestion diagnostics:', response);
+     * });
+     * ```
+     * This function is particularly useful for tools and editors integrating TypeScript support,
+     * providing an opportunity to present potential code improvements or best practices to the developer.
+     */
+    // TODO: Revisit find working usecase
+    function getSuggestionDiagnosticsSync(filePath, includeLinePosition = false) {
+        const command = {
+            command: "suggestionDiagnosticsSync",
+            arguments: {
+                file: filePath,
+                includeLinePosition: includeLinePosition
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'navbar' request to the TypeScript Server. This command is used to obtain
+     * the navigation bar structure of a TypeScript file. The navigation bar typically
+     * includes a hierarchical outline of the file's structure, including classes,
+     * interfaces, functions, variables, and other code constructs.
+     *
+     * @param {string} filePath - The path to the TypeScript file for which the navigation
+     *                            bar information is requested. The path should be absolute
+     *                            or relative to the TypeScript server's current working directory.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver containing
+     *                            the navigation bar information. The response is typically an array
+     *                            of items representing the various code constructs in the file. Each item
+     *                            includes:
+     *                            - `text`: The name of the code construct (e.g., class name, function name).
+     *                            - `kind`: The kind of code construct (e.g., 'class', 'function').
+     *                            - `kindModifiers`: Modifiers applied to the code construct (e.g., 'public', 'static').
+     *                            - `spans`: An array of span objects indicating the location of the construct in the file.
+     *                            - `childItems`: An array of child items, following the same structure, representing nested constructs.
+     *
+     * Example usage:
+     * ```
+     * getNavBar('path/to/file.ts').then(response => {
+     *   console.log('Navigation bar structure:', response);
+     * });
+     * ```
+     * This function is particularly useful for tools and editors integrating TypeScript support,
+     * providing an opportunity to present a structured outline or overview of a code file to the developer.
+     */
+    function getNavBar(filePath) {
+        const command = {
+            command: "navbar",
+            arguments: {
+                file: filePath
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'navto' request to the TypeScript Server. This command is used for
+     * searching named symbols in the project or in a particular file, with options
+     * to limit the results and scope the search to a specific project.
+     *
+     * @param {string} searchValue - The search term to navigate to from the current location.
+     *                               The term can be '.*' or an identifier prefix.
+     * @param {string} [file] - Optional file path to restrict the search to a specific file.
+     * @param {boolean} [currentFileOnly=false] - When true, limits search to the current file.
+     * @param {number} [maxResultCount] - Optional limit on the number of items to return.
+     * @param {string} [projectFileName] - Optional name of the project file (absolute pathname required).
+     * @returns {Promise<Object[]>} A promise that resolves with an array of navigation items.
+     */
+    function navTo(searchValue, file, currentFileOnly = false, maxResultCount, projectFileName) {
+        const command = {
+            command: "navto",
+            arguments: {
+                searchValue: searchValue,
+                file: file,
+                currentFileOnly: currentFileOnly,
+                maxResultCount: maxResultCount,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'navtree' request to the TypeScript Server to obtain the navigation tree of a TypeScript file.
+     * The navigation tree provides a hierarchical outline of the file's contents, detailing classes, interfaces,
+     * functions, variables, and other top-level constructs. This structured information is useful for
+     * understanding the organization of code and for quick navigation within IDEs or editors.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file. This path is required
+     *                            to locate the file within the project or file system.
+     * @param {string} [projectFileName] - Optional. The absolute path to the project file (usually 'tsconfig.json').
+     *                                     Providing this path helps the TypeScript server correctly resolve the
+     *                                     file's context within a specific project, especially useful in workspaces
+     *                                     with multiple TypeScript projects.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the navigation tree from the TypeScript server.
+     *                            The tree is a hierarchical object with nodes representing various code constructs.
+     *                            Each node typically includes:
+     *                            - `text`: The name of the construct (e.g., class or function name).
+     *                            - `kind`: The kind of construct (e.g., 'class', 'function').
+     *                            - `spans`: Array of location spans indicating where the construct appears in the file.
+     *                            - `childItems`: Array of child nodes for nested constructs (following the same structure).
+     *
+     * Example usage:
+     * ```
+     * getNavTree('path/to/file.ts', 'path/to/project.tsconfig.json').then(navTree => {
+     *   console.log('Navigation tree:', navTree);
+     * });
+     * ```
+     * The returned navigation tree is especially valuable in development environments where a visual outline
+     * or structure of the code file is beneficial for navigation and code comprehension.
+     */
+    function getNavTree(filePath, projectFileName) {
+        const command = {
+            command: "navtree",
+            arguments: {
+                file: filePath,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'navtree-full' request to the TypeScript Server. This command obtains a comprehensive
+     * navigation tree of a TypeScript file, which provides a detailed outline of the file's structure.
+     * The response includes an extensive hierarchy of all symbols and their nested scopes within the file,
+     * such as classes, interfaces, functions, variables, and other code constructs.
+     *
+     * This detailed navigation tree is particularly useful for applications that require an in-depth
+     * understanding of the file's structure, such as advanced IDE features for code navigation and analysis.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file for which the full navigation
+     *                            tree is requested. This path is essential for the TypeScript server to locate
+     *                            and analyze the file.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the full navigation tree from the TypeScript server.
+     *                            The tree is represented as an object with a hierarchical structure. Each node in the tree
+     *                            includes:
+     *                            - `text`: The name of the item (e.g., a class or function name).
+     *                            - `kind`: The kind of item (e.g., 'class', 'function').
+     *                            - `spans`: An array of span objects indicating the location of the item in the file.
+     *                            - `childItems`: An array of child nodes representing nested declarations and structures.
+     *                            Each child node follows the same structure.
+     *
+     * Example usage:
+     * ```
+     * getNavTreeFull('path/to/file.ts').then(navTreeFull => {
+     *   console.log('Full navigation tree:', navTreeFull);
+     * });
+     * ```
+     */
+    function getNavTreeFull(filePath) {
+        const command = {
+            command: "navtree-full",
+            arguments: {
+                file: filePath
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'documentHighlights' request to the TypeScript Server. This command is used to
+     * obtain highlights of all occurrences of a symbol within a specified set of files. It is
+     * particularly useful for identifying and navigating to instances of a variable, function name,
+     * or other identifiers across multiple files.
+     *
+     * @param {string} filePath - The path to the TypeScript file where the symbol occurs.
+     * @param {number} line - The line number where the symbol is located.
+     * @param {number} offset - The character offset (position) in the line where the symbol is located.
+     * @param {string[]} filesToSearch - The list of file paths to search for document highlights.
+     *                                   The search for symbol occurrences is conducted within these files.
+     *
+     * @returns {Promise<Object[]>} A promise that resolves with an array of document highlight objects.
+     * Each object represents a file with highlight instances and includes:
+     *  - `file`: The file in which the highlight occurs.
+     *  - `highlightSpans`: An array of objects representing the highlight locations. Each object includes:
+     *    - `start`: The starting position of the highlight (line and character).
+     *    - `end`: The ending position of the highlight (line and character).
+     *    - `kind`: The kind of highlight (e.g., 'writtenReference', 'reference', 'definition').
+     *
+     * Example usage:
+     * ```
+     * documentHighlights('path/to/file.ts', 10, 5, ['path/to/file1.ts', 'path/to/file2.ts'])
+     *   .then(highlights => {
+     *     console.log('Document highlights:', highlights);
+     *   });
+     * ```
+     * This function is essential for features like symbol search in development environments,
+     * where highlighting symbol occurrences enhances code understanding and navigation.
+     */
+    //TODO: fix this for js use case
+    function documentHighlights(filePath, line, offset, filesToSearch) {
+        const command = {
+            command: "documentHighlights",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                filesToSearch: filesToSearch
+            }
+        };
+        return sendCommand(command);
+    }
+
+
     /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
@@ -666,6 +945,13 @@ function createTSServerInstance() {
         getErrors,
         getErrorsForProject,
         getSemanticDiagnosticsSync,
+        getSyntacticDiagnosticsSync,
+        getSuggestionDiagnosticsSync,
+        getNavBar,
+        navTo,
+        getNavTree,
+        getNavTreeFull,
+        documentHighlights,
         exitServer
     };
 }
