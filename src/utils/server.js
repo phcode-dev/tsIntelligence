@@ -126,8 +126,9 @@ function createTSServerInstance() {
      * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
      */
     function sendCommand(command, timeout = 5000) {
-        if (command.command === "open") {
+        if (command.command === "open" || command.command === "geterr" || command.command === "geterrForProject") {
             // For 'open' command, resolve immediately as no response is expected
+            // geterr and geterrForProject returns result as events so resolve geterr and wait for response in events
             tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
             return Promise.resolve();
         }
@@ -504,6 +505,133 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'geterr' request to the TypeScript Server. This command instructs the server to compute and
+     * return errors (diagnostics) for the specified files. The diagnostics are not returned directly by this
+     * function but are instead sent back by the server as separate events or messages. This function is useful
+     * for asynchronously obtaining diagnostic information like errors and warnings from the server.
+     *
+     * @param {string[]} filePaths - An array of paths to the files for which to get errors. Each path should
+     *                               be either absolute or relative to the TypeScript server's current working directory.
+     * @param {number} delay - The delay in milliseconds to wait before the server processes the request.
+     *                         This delay can be used to batch or throttle error requests, especially when dealing
+     *                         with a large number of file changes or edits.
+     *
+     * @returns {Promise<void>} A promise that resolves when the command has been sent to the server. The resolution
+     *                          of this promise indicates that the request was successfully dispatched, but it does not
+     *                          imply that the errors have been received. The actual errors (diagnostics) will be sent
+     *                          back by the server asynchronously as separate events or messages, which should be handled
+     *                          separately in the client's message handling logic.
+     *
+     * Example usage:
+     * ```
+     * getErrors(['path/to/file1.ts', 'path/to/file2.ts'], 500).then(() => {
+     *   console.log('Error request sent. Waiting for diagnostics...');
+     * });
+     * ```
+     * Note: The client should implement additional logic to listen for and handle the diagnostic events
+     *       or messages sent by the server in response to this request.
+     */
+    function getErrors(filePaths, delay) {
+        const command = {
+            command: "geterr",
+            arguments: {
+                files: filePaths,
+                delay: delay
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'geterrForProject' request to the TypeScript Server. This command instructs the server to compute and
+     * return errors (diagnostics) for all files in a specific project. The diagnostics are not returned directly by this
+     * function but are instead sent back by the server as separate events or messages. This function is useful
+     * for asynchronously obtaining a comprehensive diagnostic overview of an entire project.
+     *
+     * @param {string} filePath - The path to any file within the project. The server uses this file to identify
+     *                            the project context. The path should be absolute or relative to the TypeScript
+     *                            server's current working directory.
+     * @param {number} delay - The delay in milliseconds before the server processes the request.
+     *                         This delay can be used to batch or throttle diagnostic requests, especially useful
+     *                         when dealing with large projects or numerous file changes.
+     *
+     * @returns {Promise<void>} A promise that resolves when the command has been sent to the server. The resolution
+     *                          of this promise indicates that the request was successfully dispatched, but it does not
+     *                          imply that the errors have been received. The actual errors (diagnostics) for the entire
+     *                          project will be sent back by the server asynchronously as separate events or messages,
+     *                          which should be handled separately in the client's message handling logic.
+     *
+     * Example usage:
+     * ```
+     * getErrorsForProject('path/to/anyFileInProject.ts', 500).then(() => {
+     *   console.log('Project error request sent. Waiting for diagnostics...');
+     * });
+     * ```
+     * Note: The client should implement additional logic to listen for and handle the diagnostic events
+     *       or messages sent by the server in response to this request. These diagnostics will cover
+     *       the entire scope of the project associated with the provided file path.
+     */
+    function getErrorsForProject(filePath, delay) {
+        const command = {
+            command: "geterrForProject",
+            arguments: {
+                file: filePath,
+                delay: delay
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'semanticDiagnosticsSync' request to the TypeScript Server. This command is used
+     * to synchronously request semantic diagnostics (such as type errors) for a specific file.
+     * It's useful when immediate and up-to-date semantic error information is needed for a file,
+     * such as during file saves or build operations.
+     *
+     * @param {string} filePath - The path to the TypeScript file for which semantic diagnostics are requested.
+     *                            The path should be absolute or relative to the TypeScript server's current
+     *                            working directory.
+     * @param {boolean} [includeLinePosition=false] - If set to true, the response will include detailed line
+     *                                                and character position information for each diagnostic.
+     *                                                This is useful for integrations that require precise
+     *                                                location data, such as IDEs or advanced text editors.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the semantic diagnostics response from tsserver.
+     *                            The response includes an array of diagnostic objects, each representing a
+     *                            semantic error or warning found in the file. Each diagnostic object typically
+     *                            contains the following information:
+     *                            - `start`: The starting position of the error (line and character).
+     *                            - `length`: The length of the error in characters.
+     *                            - `text`: The error message text.
+     *                            - `category`: The error category ('error', 'warning', or 'suggestion').
+     *                            - `code`: The error code (useful for further reference or lookups).
+     *                            If `includeLinePosition` is true, additional line and character position
+     *                            information will be included in each diagnostic.
+     *
+     * Example usage:
+     * ```
+     * getSemanticDiagnosticsSync('path/to/file.ts', true).then(response => {
+     *   console.log('Semantic diagnostics with line positions:', response);
+     * }).catch(error => {
+     *   console.error('Error getting semantic diagnostics:', error);
+     * });
+     * ```
+     *
+     * Note: This function performs a synchronous request, meaning it waits for the TypeScript server
+     *       to compute and return the diagnostics. The response is directly related to the current
+     *       state of the file at the time of the request.
+     */
+    function getSemanticDiagnosticsSync(filePath, includeLinePosition = false) {
+        const command = {
+            command: "semanticDiagnosticsSync",
+            arguments: {
+                file: filePath,
+                includeLinePosition: includeLinePosition
+            }
+        };
+        return sendCommand(command);
+    }
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -535,6 +663,9 @@ function createTSServerInstance() {
         getImplementations,
         format,
         formatOnKey,
+        getErrors,
+        getErrorsForProject,
+        getSemanticDiagnosticsSync,
         exitServer
     };
 }

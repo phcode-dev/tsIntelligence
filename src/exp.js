@@ -21,29 +21,38 @@ for (let file of FILES) {
     console.log('findSourceDefinitionResp', JSON.stringify(findSourceDefinitionResp));
 
     const completionInfoResp = await tsServer.getCompletionInfo(file.filepath, file.getCompletionInfo.line, file.getCompletionInfo.offset);
-    console.assert('completionInfoResp', JSON.stringify(completionInfoResp));
+    console.log('completionInfoResp', JSON.stringify(completionInfoResp));
 
     const getCompletionDetailsResp = await tsServer.getCompletionDetails(file.filepath, file.getCompletionDetails.line, file.getCompletionDetails.offset, completionInfoResp.body.entries[0].name);
-    console.assert('getCompletionDetailsResp', JSON.stringify(getCompletionDetailsResp));
+    console.log('getCompletionDetailsResp', JSON.stringify(getCompletionDetailsResp));
 
     const getCompileOnSaveResp = await tsServer.getCompileOnSaveAffectedFileList(file.filepath);
-    console.assert('getCompileOnSaveResp', JSON.stringify(getCompileOnSaveResp));
+    console.log('getCompileOnSaveResp', JSON.stringify(getCompileOnSaveResp));
 
     const compileOnSaveEmitFileResp = await tsServer.compileOnSaveEmitFile(file.filepath);
-    console.assert('compileOnSaveEmitFileResp', JSON.stringify(compileOnSaveEmitFileResp));
+    console.log('compileOnSaveEmitFileResp', JSON.stringify(compileOnSaveEmitFileResp));
 
     const getDefinitionAndBoundSpanResp = await tsServer.getDefinitionAndBoundSpan(file.filepath, file.getDefinitionAndBoundSpan.line, file.getDefinitionAndBoundSpan.offset);
-    console.assert('getDefinitionAndBoundSpanResp', JSON.stringify(getDefinitionAndBoundSpanResp));
+    console.log('getDefinitionAndBoundSpanResp', JSON.stringify(getDefinitionAndBoundSpanResp));
 
     const getImplementationsResp = await tsServer.getImplementations(file.filepath, file.getImplementations.line, file.getImplementations.offset);
-    console.assert('getImplementationsResp', JSON.stringify(getImplementationsResp));
+    console.log('getImplementationsResp', JSON.stringify(getImplementationsResp));
 
     const formatResp = await tsServer.format(file.filepath, file.format.line, file.format.offset, file.format.endLine, file.format.endOffset);
-    console.assert('formatResp', JSON.stringify(formatResp));
+    console.log('formatResp', JSON.stringify(formatResp));
 
     const formatOnKeyResp = await tsServer.formatOnKey(file.filepath, file.formatOnKey.line, file.formatOnKey.offset, file.formatOnKey.key);
-    console.assert('formatOnKeyResp', JSON.stringify(formatOnKeyResp));
+    console.log('formatOnKeyResp', JSON.stringify(formatOnKeyResp));
 
+    for (const sample of file.getErrors.files) {
+        await tsServer.openFile(sample);
+    }
+    //await tsServer.getErrors(file.getErrors.files, file.getErrors.delay);
 
+    //await tsServer.getErrorsForProject(file.getErrorsForProject.filePath, file.getErrorsForProject.delay);
+
+   // await tsServer.openFile(file.getSemanticDiagnosticsSync.filePath);
+    const getSemanticDiagnosticsSyncResp = await tsServer.getSemanticDiagnosticsSync(file.getSemanticDiagnosticsSync.filePath, true);
+    console.log('getSemanticDiagnosticsSyncResp', JSON.stringify(getSemanticDiagnosticsSyncResp));
 }
-tsServer.exitServer();
+//tsServer.exitServer();
