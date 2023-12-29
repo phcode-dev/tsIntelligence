@@ -865,17 +865,20 @@ function createTSServerInstance() {
         return sendCommand(command);
     }
 
+
     /**
      * Sends a 'documentHighlights' request to the TypeScript Server. This command is used to
-     * obtain highlights of all occurrences of a symbol within a specified set of files. It is
-     * particularly useful for identifying and navigating to instances of a variable, function name,
-     * or other identifiers across multiple files.
+     * obtain highlights of all occurrences of a symbol within a specified set of files, optionally
+     * within the context of a specific project. It is useful for identifying and navigating to
+     * instances of a variable, function name, or other identifiers across multiple files.
      *
      * @param {string} filePath - The path to the TypeScript file where the symbol occurs.
      * @param {number} line - The line number where the symbol is located.
      * @param {number} offset - The character offset (position) in the line where the symbol is located.
      * @param {string[]} filesToSearch - The list of file paths to search for document highlights.
-     *                                   The search for symbol occurrences is conducted within these files.
+     * @param {string} [projectFileName] - Optional. The name of the project file (absolute pathname required)
+     *                                     that contains the TypeScript file. Providing this helps to
+     *                                     accurately resolve symbols in the context of the given project.
      *
      * @returns {Promise<Object[]>} A promise that resolves with an array of document highlight objects.
      * Each object represents a file with highlight instances and includes:
@@ -887,7 +890,7 @@ function createTSServerInstance() {
      *
      * Example usage:
      * ```
-     * documentHighlights('path/to/file.ts', 10, 5, ['path/to/file1.ts', 'path/to/file2.ts'])
+     * documentHighlights('path/to/file.ts', 10, 5, ['path/to/file1.ts', 'path/to/file2.ts'], 'path/to/project.tsconfig.json')
      *   .then(highlights => {
      *     console.log('Document highlights:', highlights);
      *   });
@@ -895,20 +898,19 @@ function createTSServerInstance() {
      * This function is essential for features like symbol search in development environments,
      * where highlighting symbol occurrences enhances code understanding and navigation.
      */
-    //TODO: fix this for js use case
-    function documentHighlights(filePath, line, offset, filesToSearch) {
+    function documentHighlights(filePath, line, offset, filesToSearch, projectFileName = "") {
         const command = {
             command: "documentHighlights",
             arguments: {
                 file: filePath,
                 line: line,
                 offset: offset,
-                filesToSearch: filesToSearch
+                filesToSearch: filesToSearch,
+                projectFileName: projectFileName
             }
         };
         return sendCommand(command);
     }
-
 
     /**
      * Terminates the TypeScript Server process.
