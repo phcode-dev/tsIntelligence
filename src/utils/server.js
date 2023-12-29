@@ -2,6 +2,7 @@ import {spawn} from 'child_process';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+// @INCLUDE_IN_API_DOCS
 /**
  * Creates a new instance of TypeScript Server.
  * @returns {Object} An object containing methods to interact with TypeScript Server.
@@ -310,6 +311,141 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'completionEntryDetails' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @param {string} entryName - The name of the completion entry.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getCompletionDetails(filePath, line, offset, entryName) {
+        const command = {
+            command: "completionEntryDetails",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                entryNames: [entryName]
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'compileOnSaveAffectedFileList' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getCompileOnSaveAffectedFileList(filePath) {
+        const command = {
+            command: "compileOnSaveAffectedFileList",
+            arguments: {
+                file: filePath
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'compileOnSaveEmitFile' command to the TypeScript Server.
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {boolean} [forced=false] - Force emit even if there are errors.
+     * @param {boolean} [includeLinePosition=false] - Include line position in the response.
+     * @param {boolean} [richResponse=false] - If true, returns response as an object with detailed emit results.
+     * @returns {Promise<boolean | EmitResult>} A promise that resolves with a boolean indicating success
+     *          or an EmitResult object containing detailed information about the emit process.
+     *          - If a boolean: true if the emit was successful, false otherwise.
+     *          - If an EmitResult object:
+     *            - `emitSkipped`: A boolean indicating whether the emit was skipped.
+     *            - `diagnostics`: An array of Diagnostic or DiagnosticWithLinePosition objects, providing
+     *                            detailed information about each diagnostic message.
+     *            - `Diagnostic`: An object representing a diagnostic message, typically containing:
+     *              - `start`: The starting position of the diagnostic message.
+     *              - `length`: The length of the diagnostic message.
+     *              - `text`: The text of the diagnostic message.
+     *            - `DiagnosticWithLinePosition`: An extended version of Diagnostic, including line and
+     *                                           character position information:
+     *              - `start`: The starting position of the diagnostic message (line and character).
+     *              - `end`: The ending position of the diagnostic message (line and character).
+     *              - `text`: The text of the diagnostic message.
+     */
+    function compileOnSaveEmitFile(filePath, forced = false, includeLinePosition = false, richResponse = false) {
+        const command = {
+            command: "compileOnSaveEmitFile",
+            arguments: {
+                file: filePath,
+                forced: forced,
+                includeLinePosition: includeLinePosition,
+                richResponse: richResponse
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'definitionAndBoundSpan' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getDefinitionAndBoundSpan(filePath, line, offset) {
+        const command = {
+            command: "definitionAndBoundSpan",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'implementation' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} line - The line number of the position.
+     * @param {number} offset - The offset in the line of the position.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function getImplementations(filePath, line, offset) {
+        const command = {
+            command: "implementation",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'format' request to the TypeScript Server.
+     * @param {string} filePath - The path to the file.
+     * @param {number} startLine - The starting line number of the format range.
+     * @param {number} startOffset - The starting offset in the start line.
+     * @param {number} endLine - The ending line number of the format range.
+     * @param {number} endOffset - The ending offset in the end line.
+     * @param {object} [formatOptions] - Optional formatting options.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function format(filePath, startLine, startOffset, endLine, endOffset, formatOptions = {}) {
+        const command = {
+            command: "format",
+            arguments: {
+                file: filePath,
+                line: startLine,
+                offset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                options: formatOptions
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Sends an 'exit' command to the TypeScript Server to gracefully shut it down.
      * @function exitServer
      */
@@ -324,6 +460,50 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'formatonkey' request to the TypeScript Server. This command is used
+     * for formatting code at a specific position in a file, typically in response
+     * to a keystroke. It's commonly used for auto-formatting a line of code when
+     * a specific key (like a closing brace or semi-colon) is pressed.
+     *
+     * @param {string} filePath - The path to the TypeScript file. The path should
+     *                            be absolute or relative to the TypeScript server's
+     *                            current working directory.
+     * @param {number} line - The 1-based line number in the file where the key was
+     *                        pressed. This and the offset together point to the
+     *                        specific position in the file.
+     * @param {number} offset - The 1-based character offset in the line where the
+     *                          key was pressed. This is typically the position
+     *                          right after where the key was pressed.
+     * @param {string} key - The character corresponding to the key pressed. This
+     *                       is typically a single character like ';' or '}' that
+     *                       triggers the formatting action.
+     * @param {object} [formatOptions] - Optional formatting options to customize
+     *                                   the formatting behavior. These options might
+     *                                   include settings like tab size, indent size,
+     *                                   whether to insert spaces, and so on.
+     *                                   Example: { tabSize: 4, indentSize: 4, insertSpace: true }
+     *
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     *                            The response typically includes an array of code edits
+     *                            that should be applied to the file to achieve the
+     *                            desired formatting. Each edit suggests changes like
+     *                            text insertions, deletions, or replacements.
+     */
+    function formatOnKey(filePath, line, offset, key, formatOptions = {}) {
+        const command = {
+            command: "formatonkey",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                key: key,
+                options: formatOptions
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -333,7 +513,7 @@ function createTSServerInstance() {
         if (tsserverProcess) {
             tsserverProcess.kill();
             tsserverProcess = null;
-            console.log('tsserver process terminated');
+            console.log('tsserver pgetCompletionDetailsrocess terminated');
         }
     }
 
@@ -348,6 +528,13 @@ function createTSServerInstance() {
         getQuickInfo,
         findSourceDefinition,
         getCompletionInfo,
+        getCompletionDetails,
+        getCompileOnSaveAffectedFileList,
+        compileOnSaveEmitFile,
+        getDefinitionAndBoundSpan,
+        getImplementations,
+        format,
+        formatOnKey,
         exitServer
     };
 }
