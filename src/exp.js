@@ -73,5 +73,23 @@ for (let file of FILES) {
 
     const documentHighlightsResp = await tsServer.documentHighlights(file.documentHighlights.filePath, file.documentHighlights.line, file.documentHighlights.offset, file.documentHighlights.filesToSearch);
     console.log('documentHighlightsResp', JSON.stringify(documentHighlightsResp));
+
+    const reloadResp = await tsServer.reload(file.reload.filePath, file.reload.tempFilePath);
+    console.log('reloadResp', JSON.stringify(reloadResp));
+
+    const renameResp = await tsServer.rename(file.rename.filePath, file.rename.line, file.rename.offset, file.rename.findInComments, file.rename.findInStrings);
+    console.log('renameResp', JSON.stringify(renameResp));
+
+    await tsServer.saveto(file.saveto.filePath, file.saveto.tempFilePath);
+
+    const signatureHelpResp = await tsServer.signatureHelp(file.signatureHelp.filePath, file.signatureHelp.line, file.signatureHelp.offset, file.signatureHelp.triggerReason);
+    console.log('signatureHelpResp', JSON.stringify(signatureHelpResp));
+
+    const statusResp = await tsServer.status();
+    console.log('statusResp', JSON.stringify(statusResp));
+
+    const typeDefinitionResp = await tsServer.typeDefinition(file.typeDefinition.filePath, file.typeDefinition.line, file.typeDefinition.offset);
+    console.log('typeDefinitionResp', JSON.stringify(typeDefinitionResp));
+
 }
 //tsServer.exitServer();
