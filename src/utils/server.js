@@ -126,9 +126,10 @@ function createTSServerInstance() {
      * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
      */
     function sendCommand(command, timeout = 5000) {
-        if (command.command === "open" || command.command === "geterr" || command.command === "geterrForProject") {
+        if (command.command === "open" || command.command === "geterr" || command.command === "geterrForProject" || command.command === "saveto") {
             // For 'open' command, resolve immediately as no response is expected
             // geterr and geterrForProject returns result as events so resolve geterr and wait for response in events
+            // saveTo command also does not return any response
             tsserverProcess.stdin.write(`${JSON.stringify(command)}\n`);
             return Promise.resolve();
         }
@@ -255,11 +256,32 @@ function createTSServerInstance() {
 
 
     /**
-     * Sends a 'references' request to the TypeScript Server.
-     * @param {string} filePath - The path to the file.
-     * @param {number} line - The line number of the position.
-     * @param {number} offset - The offset in the line of the position.
-     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     * Sends a 'references' request to the TypeScript Server. This command is used to
+     * find all references to a symbol at a specified position in a file. It's commonly
+     * used to identify where a variable, function, class, or other symbol is used throughout
+     * the codebase.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The line number where the symbol is located.
+     * @param {number} offset - The character offset (position) in the line where the symbol is located.
+     *
+     * @returns {Promise<Object[]>} A promise that resolves with an array of reference items.
+     * Each item represents a reference to the symbol and includes:
+     *  - `file`: The file in which the reference occurs.
+     *  - `start`: The starting position of the reference (line and character).
+     *  - `end`: The ending position of the reference (line and character).
+     *  - `lineText`: The text of the line containing the reference.
+     *  - `isWriteAccess`: A boolean indicating if the reference is a write access (modification).
+     *  - `isDefinition`: A boolean indicating if the reference is the definition of the symbol.
+     *
+     * Example usage:
+     * ```
+     * references('path/to/file.ts', 10, 5).then(refs => {
+     *   console.log('Symbol references:', refs);
+     * });
+     * ```
+     * This function is crucial for understanding how and where symbols are used in a project,
+     * facilitating code comprehension and refactoring.
      */
     function findReferences(filePath, line, offset) {
         const command = {
@@ -274,11 +296,32 @@ function createTSServerInstance() {
     }
 
     /**
-     * Sends a 'FindSourceDefinition' request to the TypeScript Server.
-     * @param {string} filePath - The path to the file.
-     * @param {number} line - The line number of the position.
-     * @param {number} offset - The offset in the line of the position.
-     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     * Sends a 'findSourceDefinition' request to the TypeScript Server. This command is utilized to
+     * locate the original source definition of a symbol at a given position in a TypeScript file. It
+     * is particularly useful for tracing the origin of symbols, especially in cases where symbols are
+     * re-exported, helping developers navigate to the actual definition rather than a re-exported reference.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The line number where the symbol whose definition is to be found is located.
+     * @param {number} offset - The character offset within the line where the symbol is located.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the location information of the symbol's
+     *                            source definition. The response object typically includes:
+     *                            - `file`: String indicating the file path where the source definition is located.
+     *                            - `start`: Object representing the start position of the definition, containing:
+     *                              - `line`: The line number of the start position (1-based).
+     *                              - `offset`: The character offset at the start line (1-based).
+     *                            - `end`: Object representing the end position of the definition, similar in structure
+     *                                     to the `start` object.
+     *
+     * Example usage:
+     * ```
+     * findSourceDefinition('path/to/file.ts', 10, 5).then(definition => {
+     *   console.log('Source definition location:', definition);
+     * });
+     * ```
+     * This function is essential for developers in complex TypeScript projects, providing a means to
+     * quickly navigate to the original declaration of symbols, enhancing code understanding and navigation.
      */
     function findSourceDefinition(filePath, line, offset) {
         const command = {
@@ -913,6 +956,231 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'reload' request to the TypeScript Server to reload the contents of a file from disk.
+     * This command is useful for ensuring the server's view of a file is synchronized with the latest
+     * content, particularly after external changes to the file.
+     *
+     * @param {string} filePath - The path to the file to be reloaded.
+     * @param {string} tempFilePath - The path to a temporary file that contains the new content. This allows
+     *                               reloading the file content without modifying the original file on disk.
+     * @param {string} [projectFileName] - Optional. The name of the project file (absolute pathname required)
+     *                                     that contains the TypeScript file. Providing this helps the TypeScript
+     *                                     server accurately interpret the file in the context of the specified project.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the server's response after the file has been
+     *                            reloaded. The response typically includes a status indicating whether the
+     *                            reload was successful.
+     *
+     * Example usage:
+     * ```
+     * reload('path/to/file.ts', 'path/to/tempFile.ts', 'path/to/project.tsconfig.json').then(response => {
+     *   console.log('File reload response:', response);
+     * });
+     * ```
+     * This function is essential in development environments where files are frequently modified
+     * outside the editor and need to be synchronized with the TypeScript server.
+     */
+    function reload(filePath, tempFilePath, projectFileName = "") {
+        const command = {
+            command: "reload",
+            arguments: {
+                file: filePath,
+                tmpfile: tempFilePath,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+
+    /**
+     * Sends a 'rename' request to the TypeScript Server to perform a comprehensive renaming operation
+     * for a symbol at a specified location in a file. It updates references to the symbol across the
+     * entire codebase, including in comments and strings if specified.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The line number where the symbol to be renamed is located.
+     * @param {number} offset - The character offset (position) in the line where the symbol is located.
+     * @param {boolean} [findInComments=false] - Whether to find/change the text in comments.
+     * @param {boolean} [findInStrings=false] - Whether to find/change the text in strings.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the rename information from tsserver.
+     *                            The response object includes:
+     *                            - `canRename`: A boolean indicating if the symbol can be renamed.
+     *                            - `locs`: An array of location objects where each object represents
+     *                                      a file with references to the symbol. Each location object includes:
+     *                              - `file`: The file in which references are found.
+     *                              - `locs`: An array of span objects representing the reference locations.
+     *                                        Each span object includes:
+     *                                 - `start`: The starting line and character position of the reference.
+     *                                 - `end`: The ending line and character position of the reference.
+     *                            - `displayName`: The full display name of the symbol.
+     *                            - `fullDisplayName`: The full display name of the symbol with container information.
+     *                            - `kind`: The kind of the symbol (e.g., 'variable', 'function').
+     *                            - `kindModifiers`: The kind modifiers of the symbol (e.g., 'public', 'static').
+     *
+     * Example usage:
+     * ```
+     * rename('path/to/file.ts', 10, 5, true, true).then(renameInfo => {
+     *   console.log('Rename information:', renameInfo);
+     * });
+     * ```
+     * This function is essential for refactoring, providing a safe and consistent way to rename symbols
+     * across a project, including their occurrences in comments and strings if required.
+     */
+    //TODO: check multi file rename and functional object rename for js without config
+    function rename(filePath, line, offset, findInComments = false, findInStrings = false) {
+        const command = {
+            command: "rename",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                findInComments: findInComments,
+                findInStrings: findInStrings
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'saveto' request to the TypeScript Server. This command instructs the server
+     * to save the server's current view of a file's contents to a specified temporary file.
+     * It's primarily used for debugging purposes. Note that the server does not send a response
+     * to a "saveto" request.
+     *
+     * @param {string} filePath - The path to the original TypeScript file.
+     * @param {string} tempFilePath - The path where the server's view of the file's current contents should be saved.
+     * @param {string} [projectFileName] - Optional. The name of the project file (absolute pathname required)
+     *                                     that contains the TypeScript file.
+     *
+     * Example usage:
+     * ```
+     * saveto('path/to/originalFile.ts', 'path/to/tempFile.ts', 'path/to/project.tsconfig.json');
+     * ```
+     * This command is useful for debugging, allowing the current state of the file as seen by the TypeScript server
+     * to be saved to a specific location.
+     */
+    function saveto(filePath, tempFilePath, projectFileName = '') {
+        const command = {
+            command: "saveto",
+            arguments: {
+                file: filePath,
+                tmpfile: tempFilePath,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'signatureHelp' request to the TypeScript Server. This command is used to obtain
+     * information about the signature of a function or method at a specific position in a file.
+     * The response includes details about the function signatures and their parameters.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The line number where the function or method is invoked.
+     * @param {number} offset - The character offset in the line where the invocation occurs.
+     * @param {Object} [triggerReason] - The reason why signature help was invoked, with properties:
+     *                                   - `kind`: The type of trigger reason ('invoked', 'characterTyped', 'retrigger').
+     *                                   - `triggerCharacter`: The character that triggered the help (for 'characterTyped').
+     *
+     * @returns {Promise<Object>} A promise that resolves with the signature help information, which includes:
+     *                            - `items`: Array of objects representing each signature. Each object includes:
+     *                              - `label`: String representation of the function signature.
+     *                              - `documentation`: Optional documentation for the function.
+     *                              - `parameters`: Array of parameter information objects, each with:
+     *                                - `label`: The parameter name.
+     *                                - `documentation`: Optional documentation for the parameter.
+     *                            - `applicableSpan`: Object representing the span for which signature help is applicable.
+     *                            - `selectedItemIndex`: Number indicating the default selected signature.
+     *                            - `argumentIndex`: Number indicating the index of the argument where the cursor is located.
+     *                            - `argumentCount`: Number indicating the total number of arguments in the function call.
+     *
+     * Example usage:
+     * ```
+     * signatureHelp('path/to/file.ts', 15, 10, { kind: 'characterTyped', triggerCharacter: '(' }).then(help => {
+     *   console.log('Signature help:', help);
+     * });
+     * ```
+     * This function is essential for providing inline function/method signature information in development environments.
+     */
+    //TODO: experiment usecases with different trigger reason
+    function signatureHelp(filePath, line, offset, triggerReason) {
+        const command = {
+            command: "signatureHelp",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                triggerReason: triggerReason
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'status' request to the TypeScript Server. This command queries the current
+     * status of the server, providing information about its operational state. This can
+     * include details such as the server's version, the number of projects currently loaded,
+     * and any ongoing operations.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the status information from tsserver.
+     *                            The response typically includes details about the server's state,
+     *                            including its version and the status of loaded projects.
+     *
+     * Example usage:
+     * ```
+     * status().then(serverStatus => {
+     *   console.log('TypeScript server status:', serverStatus);
+     * });
+     * ```
+     * This function is useful for monitoring the TypeScript server and diagnosing issues with its operation.
+     */
+    function status() {
+        const command = {
+            command: "status"
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'typeDefinition' request to the TypeScript Server. This command is used to
+     * find the type definition of a symbol at a specified location in a TypeScript file.
+     * It is useful for navigating to the definition of the type of a symbol, such as
+     * the type of a variable, parameter, or property.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The line number where the symbol is located.
+     * @param {number} offset - The character offset (position) in the line where the symbol is located.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the location of the symbol's type definition.
+     *                            The response typically includes:
+     *                            - `file`: The file path of the type definition.
+     *                            - `start`: The starting position of the type definition (line and character).
+     *                            - `end`: The ending position of the type definition (line and character).
+     *
+     * Example usage:
+     * ```
+     * typeDefinition('path/to/file.ts', 10, 5).then(definition => {
+     *   console.log('Type definition location:', definition);
+     * });
+     * ```
+     * This function is crucial for understanding and navigating to the types used in a TypeScript codebase.
+     */
+    function typeDefinition(filePath, line, offset) {
+        const command = {
+            command: "typeDefinition",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -954,6 +1222,12 @@ function createTSServerInstance() {
         getNavTree,
         getNavTreeFull,
         documentHighlights,
+        reload,
+        rename,
+        saveto,
+        signatureHelp,
+        status,
+        typeDefinition,
         exitServer
     };
 }

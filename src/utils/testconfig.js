@@ -28,7 +28,29 @@ export const FILES = [{
         offset: 50,
         filesToSearch: ['/home/charly/repo/tsIntelligence/src/exp.js',
             '/home/charly/repo/tsIntelligence/src/utils/server.js']
-    }
+    },
+    reload: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        tempFilePath: '/home/charly/repo/tsIntelligence/src/exp.js'
+    },
+    rename: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 4,
+        offset: 31,
+        findInComments: true,
+        findInStrings: true
+    },
+    saveto: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        tempFilePath: '/home/charly/repo/tsIntelligence/src/exp1.js'
+    },
+    signatureHelp: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 4,
+        offset: 41,
+        triggerReason: {kind: 'characterTyped', triggerCharacter: '('}
+    },
+    typeDefinition: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js', line: 8, offset: 22}
 
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -65,6 +87,32 @@ export const FILES = [{
         line: 38,
         offset: 38,
         filesToSearch: ['/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts']
+    },
+    reload: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        tempFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'
+    },
+    rename: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 24,
+        offset: 27,
+        findInComments: true,
+        findInStrings: true
+    },
+    saveto: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        tempFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer1.ts'
+    },
+    signatureHelp: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 35,
+        offset: 60,
+        triggerReason: {kind: 'invoked', triggerCharacter: undefined}
+    },
+    typeDefinition: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 23,
+        offset: 50
     }
 
 }];
