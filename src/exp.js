@@ -91,5 +91,18 @@ for (let file of FILES) {
     const typeDefinitionResp = await tsServer.typeDefinition(file.typeDefinition.filePath, file.typeDefinition.line, file.typeDefinition.offset);
     console.log('typeDefinitionResp', JSON.stringify(typeDefinitionResp));
 
+    const projectInfoResp = await tsServer.projectInfo(file.projectInfo.filePath, file.projectInfo.needFileNameList);
+    console.log('projectInfoResp', JSON.stringify(projectInfoResp));
+
+    await tsServer.reloadProjects();
+
+    const openExternalProjectResp = await tsServer.openExternalProject(file.openExternalProject.project);
+    console.log('openExternalProjectResp', JSON.stringify(openExternalProjectResp));
+
+    const openExternalProjectsResp = await tsServer.openExternalProjects(file.openExternalProjects.projects);
+    console.log('openExternalProjectsResp', JSON.stringify(openExternalProjectsResp));
+
+
+
 }
 //tsServer.exitServer();
