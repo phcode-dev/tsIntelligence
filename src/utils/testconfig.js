@@ -50,7 +50,47 @@ export const FILES = [{
         offset: 41,
         triggerReason: {kind: 'characterTyped', triggerCharacter: '('}
     },
-    typeDefinition: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js', line: 8, offset: 22}
+    typeDefinition: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js', line: 8, offset: 22},
+    projectInfo: {filePath: '/home/charly/repo/tsIntelligence/src/exp.js', needFileNameList: true},
+    openExternalProject: {
+        project: {
+            projectFileName: "/home/charly/repo/libmysql",
+            rootFiles: [{
+                fileName: "/home/charly/repo/libmysql/src/index.js",
+                scriptKind: "js",
+                hasMixedContent: true
+            }],
+            options: {noImplicitAny: true, strictNullChecks: true},
+            typeAcquisition: {enable: true, include: ['node']}
+
+        }
+    },
+    openExternalProjects: {
+        projects: [
+            {
+                projectFileName: "/home/charly/repo/libcommonutils",
+                rootFiles: [{
+                    fileName: "/home/charly/repo/libcommonutils/src/index.js",
+                    scriptKind: "js",
+                    hasMixedContent: true
+                }],
+                options: {noImplicitAny: true, strictNullChecks: true},
+                typeAcquisition: {enable: true, include: ['node']}
+
+            },
+            {
+                projectFileName: "/home/charly/repo/libtestutils",
+                rootFiles: [{
+                    fileName: "/home/charly/repo/libtestutils/src/index.js",
+                    scriptKind: "js",
+                    hasMixedContent: true
+                }],
+                options: {noImplicitAny: true, strictNullChecks: true},
+                typeAcquisition: {enable: true, include: ['node']}
+
+            }
+        ]
+    }
 
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -113,6 +153,55 @@ export const FILES = [{
         filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
         line: 23,
         offset: 50
+    },
+    projectInfo: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        needFileNameList: true
+    },
+    openExternalProject: {
+        project: {
+            projectFileName: "/home/charly/repo/vscode/",
+            rootFiles: [{
+                fileName: "/home/charly/repo/vscode/extensions/css-language-features/server/src/cssServer.ts",
+                scriptKind: "ts",
+                hasMixedContent: true
+            },
+            {
+                fileName: "/home/charly/repo/vscode/extensions/css-language-features/client/src/cssClient.ts",
+                scriptKind: "ts",
+                hasMixedContent: true
+            }],
+            options: {noImplicitAny: true, strictNullChecks: true},
+            typeAcquisition: {enable: true, include: ['node']}
+
+        }
+    },
+    openExternalProjects: {
+        projects: [
+            {
+                projectFileName: "/home/charly/repo/typescript-language-server",
+                rootFiles: [{
+                    fileName: "/home/charly/repo/typescript-language-server/src/cli.ts",
+                    scriptKind: "ts",
+                    hasMixedContent: true
+                }],
+                options: {noImplicitAny: true, strictNullChecks: true},
+                typeAcquisition: {enable: true, include: ['node']}
+
+            },
+            {
+                projectFileName: "/home/charly/repo/vscode-extension-samples/task-provider-sample",
+                rootFiles: [{
+                    // eslint-disable-next-line max-len
+                    fileName: "/home/charly/repo/vscode-extension-samples/task-provider-sample/src/customTaskProvider.ts",
+                    scriptKind: "ts",
+                    hasMixedContent: true
+                }],
+                options: {noImplicitAny: true, strictNullChecks: true},
+                typeAcquisition: {enable: true, include: ['node']}
+
+            }
+        ]
     }
 
 }];

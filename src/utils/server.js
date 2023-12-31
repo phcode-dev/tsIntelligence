@@ -126,7 +126,8 @@ function createTSServerInstance() {
      * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
      */
     function sendCommand(command, timeout = 5000) {
-        if (command.command === "open" || command.command === "geterr" || command.command === "geterrForProject" || command.command === "saveto") {
+        if (command.command === "open" || command.command === "geterr" || command.command === "geterrForProject"
+            || command.command === "saveto" || command.command === "reloadProjects") {
             // For 'open' command, resolve immediately as no response is expected
             // geterr and geterrForProject returns result as events so resolve geterr and wait for response in events
             // saveTo command also does not return any response
@@ -1181,6 +1182,159 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'projectInfo' request to the TypeScript Server to retrieve information about the TypeScript
+     * project associated with a specific file. This includes details about the project's configuration,
+     * the files included, and the status of the language service.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {boolean} needFileNameList - Indicates whether the list of file names in the project is needed.
+     * @param {string} [projectFileName] - Optional. The name of the project file (absolute pathname required)
+     *                                     that contains the TypeScript file.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the project information, which includes:
+     *                            - `configFileName`: A string representing the path to the project's
+     *                                                configuration file (tsconfig.json), if available.
+     *                            - `fileNames`: An array of strings representing the file names in the project,
+     *                                           included if `needFileNameList` is true.
+     *                            - `languageServiceDisabled`: A boolean indicating whether the language service
+     *                                                         is disabled for this project.
+     *
+     * Example usage:
+     * ```
+     * projectInfo('path/to/file.ts', true, 'path/to/project.tsconfig.json').then(info => {
+     *   console.log('Project information:', info);
+     * });
+     * ```
+     * This function is useful for tools and IDEs to gain insights into the structure and configuration
+     * of a TypeScript project.
+     */
+    function projectInfo(filePath, needFileNameList = false, projectFileName = "") {
+        const command = {
+            command: "projectInfo",
+            arguments: {
+                file: filePath,
+                needFileNameList: needFileNameList,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'reloadProjects' request to the TypeScript Server. This command instructs
+     * the server to reload all projects it has loaded. It is particularly useful when
+     * project configurations or file structures have changed, ensuring that tsserver
+     * is synchronized with the current state of the projects.
+     *
+     * @returns {Promise<void>} A promise that resolves when the server has reloaded the projects.
+     *                          Note that there is no direct response from the server for this command,
+     *                          so the promise resolves as soon as the command is sent.
+     *
+     * Example usage:
+     * ```
+     * reloadProjects().then(() => {
+     *   console.log('All projects reloaded');
+     * });
+     * ```
+     * This function is essential for maintaining project synchronization with tsserver, particularly
+     * after significant changes to project configurations or file structures.
+     */
+    function reloadProjects() {
+        const command = {
+            command: "reloadProjects"
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'openExternalProject' request to the TypeScript Server. This command opens an external project
+     * with the provided configuration, which includes the project's file name, root files, compiler options,
+     * and type acquisition settings. The server responds with an acknowledgement.
+     *
+     * @param {Object} project - The external project configuration, which includes:
+     *                           - `projectFileName`: The name or path of the project file.
+     *                           - `rootFiles`: An array of objects representing the root files in the project.
+     *                                         Each object includes `fileName` and other optional properties like
+     *                                         `scriptKind` and `hasMixedContent`.
+     *                           - `options`: The compiler options for the project.
+     *                           - `typeAcquisition`: Optional type acquisition settings for the project.
+     *
+     * @returns {Promise<Object>} A promise that resolves when the server has acknowledged the opening of the external project.
+     *                            The response object contains standard response fields such as:
+     *                            - `success`: A boolean indicating whether the request was successful.
+     *                            - `request_seq`: The sequence number of the request.
+     *                            - `command`: The command requested.
+     *                            - `message`: An optional success or error message.
+     *
+     * Example usage:
+     * ```
+     * const externalProject = {
+     *   projectFileName: 'path/to/external/project',
+     *   rootFiles: [{ fileName: 'path/to/rootFile1.ts', scriptKind: 'ts', hasMixedContent: true }],
+     *   options: { noImplicitAny: true, strictNullChecks: true },
+     *   typeAcquisition: { enable: true, include: ['node'] }
+     * };
+     * openExternalProject(externalProject).then(response => {
+     *   console.log('External project opened:', response);
+     * });
+     * ```
+     * This function is particularly useful for integrating tsserver with environments where
+     * project configurations are defined externally.
+     */
+    function openExternalProject(project) {
+        const command = {
+            command: "openExternalProject",
+            arguments: project
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'openExternalProjects' request to the TypeScript Server. This command is used to
+     * open multiple external projects simultaneously. Each project configuration includes the
+     * project's file name, root files, compiler options, and type acquisition settings. The server
+     * responds with an acknowledgement.
+     *
+     * @param {Object[]} projects - An array of external project configurations. Each configuration includes:
+     *                              - `projectFileName`: The name or path of the project file.
+     *                              - `rootFiles`: An array of objects representing the root files in the project.
+     *                              - `options`: The compiler options for the project.
+     *                              - `typeAcquisition`: Optional type acquisition settings for the project.
+     *
+     * @returns {Promise<Object>} A promise that resolves when the server has acknowledged
+     *                            opening the external projects. The response object contains
+     *                            standard response fields like:
+     *                            - `success`: A boolean indicating whether the request was successful.
+     *                            - `request_seq`: The sequence number of the request.
+     *                            - `command`: The command requested.
+     *                            - `message`: An optional success or error message.
+     *
+     * Example usage:
+     * ```
+     * const externalProjects = [
+     *   {
+     *     projectFileName: 'path/to/external/project1',
+     *     rootFiles: [{ fileName: 'path/to/rootFile1.ts', scriptKind: 'ts', hasMixedContent: true }],
+     *     options: { noImplicitAny: true },
+     *     typeAcquisition: { enable: true, include: ['node'] }
+     *   },
+     *   // ... more projects ...
+     * ];
+     * openExternalProjects(externalProjects).then(response => {
+     *   console.log('External projects opened:', response);
+     * });
+     * ```
+     * This function is especially useful for environments where multiple TypeScript projects are managed externally.
+     */
+    function openExternalProjects(projects) {
+        const command = {
+            command: "openExternalProjects",
+            arguments: {projects: projects}
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -1228,6 +1382,10 @@ function createTSServerInstance() {
         signatureHelp,
         status,
         typeDefinition,
+        projectInfo,
+        reloadProjects,
+        openExternalProject,
+        openExternalProjects,
         exitServer
     };
 }
