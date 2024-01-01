@@ -90,6 +90,37 @@ export const FILES = [{
 
             }
         ]
+    },
+    updateOpen: {
+        openFiles: [{
+            fileName: '/home/charly/repo/tsIntelligence/src/test/sample/nonCompleteInit.js'
+        }],
+        changedFiles: [{
+            fileName: '/home/charly/repo/tsIntelligence/src/test/sample/sematic.ts',
+            textChanges: [{start: {line: 6, offset: 7}, end: {line: 6, offset: 9}, newText: 'hello'}]
+        }],
+        closedFiles: ['/home/charly/repo/tsIntelligence/src/exp.js']
+    },
+    getOutliningSpans: {
+        fileName: '/home/charly/repo/tsIntelligence/src/utils/server.js'
+    },
+    todoComments: {
+        fileName: '/home/charly/repo/tsIntelligence/src/utils/server.js',
+        descriptors: [{text: 'TODO', priority: 1}, {text: 'FIXME', priority: 2}]
+    },
+    indentation: {
+        fileName: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 118,
+        offset: 10,
+        options: {
+            indentSize: 4,
+            baseIndentSize: 4,
+            newLineCharacter: "\n",
+            trimTrailingWhitespace: true,
+            indentStyle: 1,
+            tabSize: 4,
+            convertTabsToSpaces: true
+        }
     }
 
 }, {
@@ -166,11 +197,11 @@ export const FILES = [{
                 scriptKind: "ts",
                 hasMixedContent: true
             },
-            {
-                fileName: "/home/charly/repo/vscode/extensions/css-language-features/client/src/cssClient.ts",
-                scriptKind: "ts",
-                hasMixedContent: true
-            }],
+                {
+                    fileName: "/home/charly/repo/vscode/extensions/css-language-features/client/src/cssClient.ts",
+                    scriptKind: "ts",
+                    hasMixedContent: true
+                }],
             options: {noImplicitAny: true, strictNullChecks: true},
             typeAcquisition: {enable: true, include: ['node']}
 
@@ -202,6 +233,27 @@ export const FILES = [{
 
             }
         ]
+    },
+    getOutliningSpans: {
+        fileName: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'
+    },
+    todoComments: {
+        fileName: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        descriptors: [{text: 'TODO', priority: 1}, {text: 'FIXME', priority: 2}]
+    },
+    indentation: {
+        fileName: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 118,
+        offset: 10,
+        options: {
+            indentSize: 4,
+            baseIndentSize: 4,
+            newLineCharacter: "\n",
+            trimTrailingWhitespace: true,
+            indentStyle: 1,
+            tabSize: 4,
+            convertTabsToSpaces: true
+        }
     }
-
+// TODO: add testcase for update and open
 }];
