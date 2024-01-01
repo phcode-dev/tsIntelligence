@@ -1,3 +1,36 @@
+const compilerOption = {
+    // Allow JavaScript files to be compiled
+    allowJs: true,
+
+    // Specify the module system, common options are "CommonJS" or "ESNext" for ES Modules
+    module: "CommonJS",
+
+    // Target specific ECMAScript version for output (e.g., "ES2020")
+    target: "ES2020",
+
+    // Enable strict mode for type checking (if you're using TypeScript features in .js files)
+    strict: true,
+
+    // Include type definitions for Node.js (if your project is a Node.js project)
+    types: ["node"],
+
+    // Enable synthetic default imports (e.g., to import React as `import React from 'react'`)
+    allowSyntheticDefaultImports: true,
+
+    // Optionally, set the module resolution strategy
+    moduleResolution: "node",
+
+    // Enable emitting decorator metadata (useful if you're using decorators)
+    experimentalDecorators: true,
+
+    // Emit BOM for UTF-8 files
+    emitBOM: false
+
+    // If using JSX (React), set this to "React"
+    // jsx: "React"
+
+    // Other options as needed for your project...
+};
 export const FILES = [{
     filepath: '/home/charly/repo/tsIntelligence/src/exp.js',
     definition: {line: 11, offset: 49},
@@ -121,8 +154,16 @@ export const FILES = [{
             tabSize: 4,
             convertTabsToSpaces: true
         }
+    },
+    docCommentTemplate: {
+        fileName: '/home/charly/repo/tsIntelligence/src/test/sample/doctemplate.ts',
+        line: 12,
+        offset: 5
+    },
+    setCompilerOptionsForInferredProjects: {
+        options: compilerOption,
+        projectRootPath: '/home/charly/repo/tsIntelligence/'
     }
-
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
     definition: {line: 49, offset: 36},
@@ -254,6 +295,15 @@ export const FILES = [{
             tabSize: 4,
             convertTabsToSpaces: true
         }
+    },
+    docCommentTemplate: {
+        fileName:  '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 47,
+        offset: 1
+    },
+    setCompilerOptionsForInferredProjects: {
+        options: compilerOption,
+        projectRootPath: '/home/charly/repo/tsIntelligence/'
     }
 // TODO: add testcase for update and open
 }];

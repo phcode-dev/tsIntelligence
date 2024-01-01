@@ -120,5 +120,13 @@ for (let file of FILES) {
     const indentationsResponse = await tsServer.indentation(file.indentation.fileName, file.indentation.line, file.indentation.offset, file.indentation.options);
     console.log('indentationsResponse', JSON.stringify(indentationsResponse));
 
+    await tsServer.openFile(file.docCommentTemplate.fileName);
+    const docCommentTemplateResponse = await tsServer.docCommentTemplate(file.docCommentTemplate.fileName, file.docCommentTemplate.line, file.docCommentTemplate.offset);
+    console.log('docCommentTemplateResponse', JSON.stringify(docCommentTemplateResponse));
+
+    const setCompilerOptionsForInferredProjectsResponse = await tsServer.setCompilerOptionsForInferredProjects(file.setCompilerOptionsForInferredProjects.options, file.setCompilerOptionsForInferredProjects.projectRootPath);
+    console.log('setCompilerOptionsForInferredProjectsResponse', JSON.stringify(setCompilerOptionsForInferredProjectsResponse));
+
+
 }
 //tsServer.exitServer();
