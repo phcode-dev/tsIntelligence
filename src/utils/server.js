@@ -1335,6 +1335,189 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'closeExternalProject' request to the TypeScript Server. This command closes an external project
+     * that was previously opened. The server responds with an acknowledgement. Closing a project is important
+     * for managing resources and keeping the server's context accurate, especially in dynamic environments.
+     *
+     * @param {string} projectFileName - The name or path of the external project file to close.
+     *
+     * @returns {Promise<Object>} A promise that resolves when the server has acknowledged closing the project.
+     *                            The response object contains standard response fields such as:
+     *                            - `success`: A boolean indicating whether the request was successful.
+     *                            - `request_seq`: The sequence number of the request.
+     *                            - `command`: The command requested.
+     *                            - `message`: An optional success or error message.
+     *
+     * Example usage:
+     * ```
+     * closeExternalProject('path/to/external/project').then(response => {
+     *   console.log('External project closed:', response);
+     * });
+     * ```
+     * This function is essential for managing the lifecycle of external projects in various development environments.
+     */
+    function closeExternalProject(projectFileName) {
+        const command = {
+            command: "closeExternalProject",
+            arguments: {projectFileName}
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'updateOpen' request to the TypeScript Server. This command updates the set of open files,
+     * including newly opened files, changed files, and files to be closed. It synchronizes the server's
+     * view of files with the current state in the development environment.
+     *
+     * @param {Object[]} openFiles - Array of objects for newly opened files. Each object includes:
+     *                               - `fileName`: The file name.
+     *                               - `fileContent`: (Optional) The current content of the file.
+     *                               - `scriptKindName`: (Optional) The kind of script ('TS', 'JS', 'TSX', 'JSX').
+     *                               - `projectRootPath`: (Optional) Root path for project configuration file search.
+     * @param {Object[]} changedFiles - Array of objects for changed files. Each object includes:
+     *                                  - `fileName`: The file name.
+     *                                  - `textChanges`: Array of changes, each with `start`, `end`, and `newText`.
+     * @param {string[]} closedFiles - Array of file names that should be closed.
+     *
+     * @returns {Promise<void>} A promise that resolves when the server has processed the update.
+     *
+     * Example usage:
+     * ```
+     * updateOpen(
+     *   [{ fileName: 'path/to/openedFile.ts', fileContent: 'file content', scriptKindName: 'TS' }],
+     *   [{ fileName: 'path/to/changedFile.ts', textChanges: [{ start: { line: 1, offset: 1 }, end: { line: 1, offset: 10 }, newText: 'updated content' }] }],
+     *   ['path/to/closedFile.ts']
+     * ).then(() => {
+     *   console.log('Open files updated');
+     * });
+     * ```
+     * This function is crucial for keeping the TypeScript server in sync with the file changes in the development environment.
+     */
+    // TODO: write working test case and figure out the behavior
+    function updateOpen(openFiles, changedFiles, closedFiles) {
+        const command = {
+            command: "updateOpen",
+            arguments: {
+                openFiles,
+                changedFiles,
+                closedFiles
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'getOutliningSpans' request to the TypeScript Server. This command retrieves outlining spans
+     * (code folding regions) for a specified file. These spans help editors to create collapsible regions,
+     * enhancing code readability and navigation, especially in large files.
+     *
+     * @param {string} fileName - The name of the file for which outlining spans are requested.
+     *
+     * @returns {Promise<Object[]>} A promise that resolves with an array of outlining span objects.
+     *                              Each outlining span object includes:
+     *                              - `textSpan`: The span of the document to collapse, with start and end locations.
+     *                              - `hintSpan`: The span to display as a hint when the user hovers over the collapsed span.
+     *                              - `bannerText`: The text to display in the editor for the collapsed region.
+     *                              - `autoCollapse`: Indicates whether the region should automatically collapse in certain conditions.
+     *                              - `kind`: The kind of outlining span, such as 'comment', 'region', 'code', or 'imports'.
+     *
+     * Example usage:
+     * ```
+     * getOutliningSpans('path/to/file.ts').then(spans => {
+     *   console.log('Outlining spans:', spans);
+     * });
+     * ```
+     * This function is vital for code editors, providing the necessary information for code folding features,
+     * helping developers manage visibility in large code files.
+     */
+    function getOutliningSpans(fileName) {
+        const command = {
+            command: "getOutliningSpans",
+            arguments: {file: fileName}
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'todoComments' request to the TypeScript Server. This command searches for TODO comments
+     * in a specified file based on given descriptors. Each descriptor includes a text to match (like 'TODO')
+     * and a priority level.
+     *
+     * @param {string} fileName - The name of the file to search for TODO comments.
+     * @param {Object[]} descriptors - Array of descriptors for TODO comments. Each descriptor includes:
+     *                                 - `text`: The text of the TODO comment (e.g., 'TODO', 'FIXME').
+     *                                 - `priority`: The priority level of the comment.
+     *
+     * @returns {Promise<Object[]>} A promise that resolves with an array of TODO comment objects.
+     *                              Each object includes:
+     *                              - `descriptor`: The descriptor of the TODO comment.
+     *                              - `message`: The text of the TODO comment.
+     *                              - `position`: The position of the comment in the file.
+     *
+     * Example usage:
+     * ```
+     * todoComments('path/to/file.ts', [{ text: 'TODO', priority: 1 }, { text: 'FIXME', priority: 2 }])
+     *   .then(comments => {
+     *     console.log('TODO comments:', comments);
+     *   });
+     * ```
+     * This function is useful for identifying and listing TODO comments and other annotations in the code.
+     */
+    function todoComments(fileName, descriptors) {
+        const command = {
+            command: "todoComments",
+            arguments: {
+                file: fileName,
+                descriptors: descriptors
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'indentation' request to the TypeScript Server. This command calculates the indentation level
+     * for a specific location in a file, taking into account optional editor settings. It's useful for maintaining
+     * consistent formatting in code editors or IDEs.
+     *
+     * @param {string} fileName - The name of the file to calculate indentation for.
+     * @param {number} line - The line number (1-based) to calculate the indentation.
+     * @param {number} offset - The character offset (1-based) in the line for indentation calculation.
+     * @param {Object} [options] - Optional editor settings to use for computing indentation. Includes:
+     *                             - `baseIndentSize`: The base indent size in spaces.
+     *                             - `indentSize`: The size of an indentation level in spaces.
+     *                             - `tabSize`: The size of a tab character in spaces.
+     *                             - `newLineCharacter`: The character(s) to use for a newline.
+     *                             - `convertTabsToSpaces`: Whether to convert tabs to spaces.
+     *                             - `indentStyle`: The style of indentation ('None', 'Block', 'Smart').
+     *                             - `trimTrailingWhitespace`: Whether to trim trailing whitespace.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the indentation result, including:
+     *                            - `position`: The base position in the document for the indent.
+     *                            - `indentation`: The number of columns for the indent relative to the position's column.
+     *
+     * Example usage:
+     * ```
+     * indentation('path/to/file.ts', 10, 4, { indentSize: 4, tabSize: 4, convertTabsToSpaces: true })
+     *   .then(result => {
+     *     console.log('Indentation result:', result);
+     *   });
+     * ```
+     * This function assists in automating code formatting in development environments.
+     */
+    function indentation(fileName, line, offset, options) {
+        const command = {
+            command: "indentation",
+            arguments: {
+                file: fileName,
+                line: line,
+                offset: offset,
+                options: options
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -1344,7 +1527,7 @@ function createTSServerInstance() {
         if (tsserverProcess) {
             tsserverProcess.kill();
             tsserverProcess = null;
-            console.log('tsserver pgetCompletionDetailsrocess terminated');
+            console.log('tsserver  terminated');
         }
     }
 
@@ -1386,6 +1569,11 @@ function createTSServerInstance() {
         reloadProjects,
         openExternalProject,
         openExternalProjects,
+        closeExternalProject,
+        updateOpen,
+        getOutliningSpans,
+        indentation,
+        todoComments,
         exitServer
     };
 }

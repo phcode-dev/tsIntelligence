@@ -102,7 +102,23 @@ for (let file of FILES) {
     const openExternalProjectsResp = await tsServer.openExternalProjects(file.openExternalProjects.projects);
     console.log('openExternalProjectsResp', JSON.stringify(openExternalProjectsResp));
 
+    const closeExternalProjectResp = await tsServer.closeExternalProject(file.openExternalProject.project.projectFileName);
+    console.log('closeExternalProjectResp ', JSON.stringify(closeExternalProjectResp));
 
+    for (const project of file.openExternalProjects.projects) {
+        const closeExternalProjectResp = await tsServer.closeExternalProject(project.projectFileName);
+        console.log('closeExternalProjectResp ', JSON.stringify(closeExternalProjectResp));
+    }
+    /* await  tsServer.openFile(file.updateOpen.openFiles.fileName)
+     const updateOpenResp = await tsServer.updateOpen(file.updateOpen.openFiles, file.updateOpen.changedFiles, file.updateOpen.closedFiles);
+     console.log('updateOpenResp ', JSON.stringify(updateOpenResp));*/
+    const getOutliningSpansResponse = await tsServer.getOutliningSpans(file.getOutliningSpans.fileName);
+    console.log('getOutliningSpansResponse', JSON.stringify(getOutliningSpansResponse));
+    const todoCommentsResponse = await tsServer.todoComments(file.todoComments.fileName, file.todoComments.descriptors);
+           console.log('todoCommentsResponse', JSON.stringify(todoCommentsResponse));
+
+    const indentationsResponse = await tsServer.indentation(file.indentation.fileName, file.indentation.line, file.indentation.offset, file.indentation.options);
+    console.log('indentationsResponse', JSON.stringify(indentationsResponse));
 
 }
 //tsServer.exitServer();
