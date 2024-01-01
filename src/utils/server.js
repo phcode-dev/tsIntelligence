@@ -7,7 +7,7 @@ import {fileURLToPath} from 'url';
  * Creates a new instance of TypeScript Server.
  * @returns {Object} An object containing methods to interact with TypeScript Server.
  */
-function createTSServerInstance() {
+function createTSServerInstance(inferredProject = true) {
     let tsserverProcess = null;
     let seqNumber = 0;
     const pendingCommands = new Map();
@@ -34,7 +34,7 @@ function createTSServerInstance() {
             const __dirname = path.dirname(fileURLToPath(import.meta.url));
             const tsserverPath = (tsServer) ? tsServer : path.join(__dirname, '..', '..', 'node_modules', 'typescript', 'bin', 'tsserver');
             const nodePath = (!node) ? 'node' : node;
-            tsserverProcess = spawn(nodePath, [tsserverPath]);
+            tsserverProcess = spawn(nodePath, [tsserverPath, (inferredProject) ? '--useInferredProjectPerProjectRoot' : ""]);
             tsserverProcess.stdout.setEncoding('utf8');
 
             pendingCommands.set(CONNECT_MESSAGE_KEY, {resolve, reject});
@@ -1518,6 +1518,82 @@ function createTSServerInstance() {
     }
 
     /**
+     * Sends a 'docCommentTemplate' request to the TypeScript Server. This command generates a JSDoc comment template
+     * at a specified line and character offset in a file. It's useful for quickly inserting standardized documentation comments.
+     *
+     * @param {string} fileName - The absolute path of the file in which to generate the comment template.
+     * @param {number} line - The line number (1-based) where the template should be generated.
+     * @param {number} offset - The character offset (1-based) on the line for the template.
+     *
+     * @returns {Promise<Object>} A promise that resolves with the generated comment template. The result includes:
+     *                            - `newText`: The text of the generated documentation comment.
+     *                            - `caretOffset`: The position in the newText where the caret should be placed.
+     *
+     * Example usage:
+     * ```
+     * docCommentTemplate('path/to/file.ts', 10, 5).then(template => {
+     *   console.log('Documentation comment template:', template);
+     * });
+     * ```
+     * This function assists developers in maintaining consistent documentation standards in their codebase.
+     */
+    function docCommentTemplate(fileName, line, offset) {
+        const command = {
+            command: "docCommentTemplate",
+            arguments: {
+                file: fileName,
+                line: line,
+                offset: offset
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'compilerOptionsForInferredProjects' request to the TypeScript Server. This command sets the compiler
+     * options for inferred projects. An inferred project is created when a loose file, not part of any other project,
+     * is opened. These projects are grouped based on their root directory if 'useInferredProjectPerProjectRoot' is enabled.
+     *
+     * When 'useInferredProjectPerProjectRoot' is enabled, the TypeScript server creates a separate inferred project for each
+     * directory root. This allows for isolated handling of files in different folders, each treated as a distinct project
+     * with its own settings. This setting is crucial for large workspaces or monorepos where different directories may have
+     * different TypeScript configurations.
+     *
+     * @param {Object} options - Compiler options for inferred projects, similar to tsconfig.json settings.
+     * @param {string} [projectRootPath] - Optional root path to scope the compiler options. Required if the server is started
+     *                                    with 'useInferredProjectPerProjectRoot' enabled.
+     *
+     * @returns {Promise<void>} A promise that resolves when the server acknowledges the update.
+     *
+     * Example usage:
+     * ```
+     * const compilerOptions = {
+     *   allowJs: true,
+     *   strict: true,
+     *   // ... other options
+     * };
+     * const projectRoot = 'path/to/project/root'; // Optional
+     * setCompilerOptionsForInferredProjects(compilerOptions, projectRoot)
+     *   .then(() => {
+     *     console.log('Compiler options for inferred projects updated');
+     *   });
+     * ```
+     * This function is essential for setting up appropriate behaviors for files in inferred projects,
+     * especially in complex workspaces with multiple disjoint projects.
+     */
+
+    function setCompilerOptionsForInferredProjects(options, projectRootPath) {
+        const command = {
+            command: "compilerOptionsForInferredProjects",
+            arguments: {
+                options: options,
+                projectRootPath: projectRootPath
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -1574,6 +1650,8 @@ function createTSServerInstance() {
         getOutliningSpans,
         indentation,
         todoComments,
+        docCommentTemplate,
+        setCompilerOptionsForInferredProjects,
         exitServer
     };
 }
