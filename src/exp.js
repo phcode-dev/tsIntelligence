@@ -1,7 +1,7 @@
 import createTSServerInstance from './utils/server.js';
 import {FILES} from "./utils/testconfig.js";
 
-const tsServer = createTSServerInstance();
+const tsServer = createTSServerInstance(false);
 await tsServer.init();
 console.log('server intializeed');
 
@@ -115,7 +115,7 @@ for (let file of FILES) {
     const getOutliningSpansResponse = await tsServer.getOutliningSpans(file.getOutliningSpans.fileName);
     console.log('getOutliningSpansResponse', JSON.stringify(getOutliningSpansResponse));
     const todoCommentsResponse = await tsServer.todoComments(file.todoComments.fileName, file.todoComments.descriptors);
-           console.log('todoCommentsResponse', JSON.stringify(todoCommentsResponse));
+    console.log('todoCommentsResponse', JSON.stringify(todoCommentsResponse));
 
     const indentationsResponse = await tsServer.indentation(file.indentation.fileName, file.indentation.line, file.indentation.offset, file.indentation.options);
     console.log('indentationsResponse', JSON.stringify(indentationsResponse));
@@ -124,9 +124,29 @@ for (let file of FILES) {
     const docCommentTemplateResponse = await tsServer.docCommentTemplate(file.docCommentTemplate.fileName, file.docCommentTemplate.line, file.docCommentTemplate.offset);
     console.log('docCommentTemplateResponse', JSON.stringify(docCommentTemplateResponse));
 
-    const setCompilerOptionsForInferredProjectsResponse = await tsServer.setCompilerOptionsForInferredProjects(file.setCompilerOptionsForInferredProjects.options, file.setCompilerOptionsForInferredProjects.projectRootPath);
-    console.log('setCompilerOptionsForInferredProjectsResponse', JSON.stringify(setCompilerOptionsForInferredProjectsResponse));
+    /*const setCompilerOptionsForInferredProjectsResponse = await tsServer.setCompilerOptionsForInferredProjects(file.setCompilerOptionsForInferredProjects.options, file.setCompilerOptionsForInferredProjects.projectRootPath);
+    console.log('setCompilerOptionsForInferredProjectsResponse', JSON.stringify(setCompilerOptionsForInferredProjectsResponse));*/
 
+    //TODO: Revisit
+    /* await tsServer.openFile(file.getCodeFixes.fileName);
+     const getCodeFixesResponse = await tsServer.getCodeFixes(file.getCodeFixes.fileName, file.getCodeFixes.startLine, file.getCodeFixes.endLine, file.getCodeFixes.endLine, file.getCodeFixes.endOffset, file.getCodeFixes.errorCodes);
+     console.log('getCodeFixesResponse', JSON.stringify(getCodeFixesResponse));*/
 
+    // TODO: Revisit as it is used along with getCodeFixes in vscode
+    /*   await tsServer.openFile(file.getCombinedCodeFix.scope.args.file);
+       const getCombinedCodeFixResponse = await tsServer.getCombinedCodeFix(file.getCombinedCodeFix.fileName, file.getCombinedCodeFix.fixId, file.getCombinedCodeFix.scope);
+       console.log('getCombinedCodeFixResponse', JSON.stringify(getCombinedCodeFixResponse));*/
+
+    const getSupportedCodeFixesResponse = await tsServer.getSupportedCodeFixes(file.getSupportedCodeFixes.file);
+    console.log('getSupportedCodeFixesResponse', JSON.stringify(getSupportedCodeFixesResponse));
+
+    await tsServer.openFile(file.getApplicableRefactors.filePath);
+    const getApplicableRefactorsResponse = await tsServer.getApplicableRefactors(file.getApplicableRefactors.filePath, file.getApplicableRefactors.line, file.getApplicableRefactors.offset/*, file.getApplicableRefactors.triggerReason, file.getApplicableRefactors.kind, file.getApplicableRefactors.includeInteractiveActions*/);
+    console.log('getApplicableRefactorsResponse', JSON.stringify(getApplicableRefactorsResponse));
+
+    //TODO: Write working use case with editor
+    await tsServer.openFile(file.getEditsForRefactor.filePath);
+    const getEditsForRefactorResponse = await tsServer.getEditsForRefactor(file.getEditsForRefactor.filePath, file.getEditsForRefactor.refactor, file.getEditsForRefactor.action, file.getEditsForRefactor.startLine, file.getEditsForRefactor.startOffset, file.getEditsForRefactor.endLine, file.getEditsForRefactor.endOffset, file.getEditsForRefactor.interactiveRefactorArguments);
+    console.log('getEditsForRefactorResponse', JSON.stringify(getEditsForRefactorResponse));
 }
 //tsServer.exitServer();
