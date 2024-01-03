@@ -163,6 +163,43 @@ export const FILES = [{
     setCompilerOptionsForInferredProjects: {
         options: compilerOption,
         projectRootPath: '/home/charly/repo/tsIntelligence/'
+    },
+    //TODO: find a working use case and make experiment it
+    getCodeFixes: {
+        fileName: '/home/charly/repo/tsIntelligence/src/test/sample/sematic.ts',
+        startLine: 1,
+        startOffset: 1,
+        endLine: 14,
+        endOffset: 10,
+        errorCodes: [1003, 1005]
+    },
+    //TODO: find a working use case and make experiment it
+    getCombinedCodeFix: {
+        fixId: "",
+        scope: {type: 'file', args: {file: '/home/charly/repo/tsIntelligence/src/test/sample/getCombinedCodeFix.ts'}}
+    },
+    getSupportedCodeFixes: {file: '/home/charly/repo/tsIntelligence/src/exp.js'},
+    getApplicableRefactors: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/getApplicableRefactors.ts',
+        line: 2,
+        offset: 10,
+        triggerReason: 'invoked',
+        kind: undefined,
+        includeInteractiveActions: true
+
+    },
+    //TODO revisit see how to use it with editor
+    getEditsForRefactor: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts',
+        refactor: 'Extract Method',
+        action: 'Extract to method in class "Sample"',
+        startLine: 7,
+        startOffset: 0,
+        endLine: 10,
+        endOffset: 0,
+        interactiveRefactorArguments: {
+            targetFile: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts'
+        }
     }
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -297,13 +334,46 @@ export const FILES = [{
         }
     },
     docCommentTemplate: {
-        fileName:  '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        fileName: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
         line: 47,
         offset: 1
     },
     setCompilerOptionsForInferredProjects: {
         options: compilerOption,
         projectRootPath: '/home/charly/repo/tsIntelligence/'
+    },
+    //TODO: find a working use case and make experiment it
+    getCodeFixes: {
+        fileName: '/home/charly/repo/tsIntelligence/src/test/sample/sematic.ts',
+        startLine: 1,
+        startOffset: 1,
+        endLine: 14,
+        endOffset: 10,
+        errorCodes: [1003, 1005]
+    },
+    // eslint-disable-next-line max-len
+    getSupportedCodeFixes: {file: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts'},
+    getApplicableRefactors: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 68,
+        offset: 50,
+        triggerReason: 'invoked',
+        kind: undefined,
+        includeInteractiveActions: true
+
+    },
+    //TODO revisit see how to use it with editor
+    getEditsForRefactor: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts',
+        refactor: 'Extract Method',
+        action: 'Extract to method in class "Sample"',
+        startLine: 7,
+        startOffset: 0,
+        endLine: 10,
+        endOffset: 0,
+        interactiveRefactorArguments: {
+            targetFile: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts'
+        }
     }
 // TODO: add testcase for update and open
 }];

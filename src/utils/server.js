@@ -1594,6 +1594,197 @@ function createTSServerInstance(inferredProject = true) {
     }
 
     /**
+     * Sends a 'getCodeFixes' request to the TypeScript Server. This command fetches available code fixes
+     * for a specified range in a file, targeting specific error codes. It's commonly used for automated correction
+     * of code issues such as syntax errors or style violations.
+     *
+     * @param {string} fileName - The name of the file to get code fixes for.
+     * @param {number} startLine - The starting line number of the range (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} endLine - The ending line number of the range (1-based).
+     * @param {number} endOffset - The ending character offset on the end line (1-based).
+     * @param {number[]} errorCodes - Array of error codes to get fixes for.
+     *
+     * @returns {Promise<Object>} A promise that resolves with an array of code fix objects. Each object may include
+     *                            file changes and optional commands for applying these changes.
+     *
+     * Example usage:
+     * ```
+     * getCodeFixes('path/to/file.ts', 1, 1, 2, 1, [1003, 1005])
+     *   .then(fixes => {
+     *     console.log('Available code fixes:', fixes);
+     *   });
+     * ```
+     * This function is invaluable in development environments for quickly addressing and correcting code issues.
+     */
+
+    // TODO: Find a working use case
+    function getCodeFixes(fileName, startLine, startOffset, endLine, endOffset, errorCodes) {
+        const command = {
+            command: "getCodeFixes",
+            arguments: {
+                file: fileName,
+                startLine: startLine,
+                startOffset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                errorCodes: errorCodes
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to retrieve a set of code actions that can be applied as a single fix.
+     * These actions address multiple related issues within a specified scope in a file. It's useful for applying a
+     * comprehensive fix that spans multiple errors or issues.
+     *
+     * @param {Object} fixId - An object representing the identifier of the combined code fix. The structure of this
+     *                         object depends on the types of fixes needed.
+     * @param {Object} scope - The scope object defining the range or extent of the code for which fixes are sought.
+     *                         Typically includes the file name and other contextual information.
+     * @returns {Promise<Object>} A promise that resolves with the combined code fix actions. The resolved object
+     *                            typically includes changes to be made to files and optional commands.
+     * @throws {Error} Thrown if the request to the TypeScript server fails.
+     *
+     * @example
+     * // Example usage of getCombinedCodeFix
+     * getCombinedCodeFix('path/to/file.ts', { type: 'fixId' }, { type: 'file', args: { file: 'path/to/file.ts' } })
+     *   .then(fix => {
+     *     console.log('Combined code fix:', fix);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting combined code fix:', error);
+     *   });
+     */
+    // ToDo: revisit
+    function getCombinedCodeFix(fixId, scope) {
+        const command = {
+            command: "getCombinedCodeFix",
+            arguments: {
+                scope: scope,
+                fixId: fixId
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'getSupportedCodeFixes' request to the TypeScript Server. This command retrieves a list of error
+     * codes that have associated code fixes available. It's useful to identify which errors in the code can be
+     * automatically fixed by the server.
+     * @param {string} file - fully path of a file in the project to query for code fixes
+     * @returns {Promise<string[]>} A promise that resolves with an array of error code strings supported by the server for code fixes.
+     *
+     * @example
+     * getSupportedCodeFixes("file.ts")
+     *   .then(supportedCodes => {
+     *     console.log('Supported error codes for code fixes:', supportedCodes);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting supported code fixes:', error);
+     *   });
+     */
+    function getSupportedCodeFixes(file) {
+        const command = {
+            command: "getSupportedCodeFixes",
+            arguments: {file: file} // Optional arguments based on Partial<FileRequestArgs>
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'getApplicableRefactors' request to the TypeScript Server. This command retrieves a list of potential refactoring actions
+     * applicable at a specific position or selection area in a TypeScript file. Each refactoring action is grouped under a parent refactoring.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file.
+     * @param {number} offset - The 1-based character offset in the line.
+     * @param {string} [triggerReason] - The reason for triggering the refactor, either 'implicit' or 'invoked'.
+     * @param {string} [kind] - The kind of refactoring to apply.
+     * @param {boolean} [includeInteractiveActions] - Include refactor actions that require additional arguments.
+     * @returns {Promise<Object[]>} A promise that resolves with an array of applicable refactorings. Each object in the array represents a refactoring action and contains properties like `name`, `description`, `inlineable`, and `actions`.
+     * @example
+     * getApplicableRefactors('path/to/file.ts', 10, 15, 'invoked', null, true)
+     *   .then(refactors => {
+     *     console.log('Applicable refactors:', refactors);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting applicable refactors:', error);
+     *   });
+     */
+    function getApplicableRefactors(filePath, line, offset, triggerReason, kind, includeInteractiveActions) {
+        const command = {
+            command: "getApplicableRefactors",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                triggerReason: triggerReason,
+                kind: kind,
+                includeInteractiveActions: includeInteractiveActions
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'getEditsForRefactor' request to the TypeScript Server to retrieve the specific code edits
+     * required to apply a chosen refactoring action to a given code range or location in a TypeScript file.
+     * The function handles both FileLocationRequestArgs (for a single location) and FileRangeRequestArgs
+     * (for a range of code).
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file where the refactoring will be applied.
+     * @param {string} refactor - The programmatic name of the refactoring. This should match one of the refactoring
+     *                            names received from the TypeScript server in response to a 'getApplicableRefactors' request.
+     *                            Examples of refactor names could include 'Extract Method', 'Extract Function',
+     *                            'Move to a new file', etc.
+     * @param {string} action - The specific refactoring action to apply. This corresponds to one of the action names
+     *                          provided by the TypeScript server within a particular refactoring category. Each refactoring
+     *                          can have multiple actions, and this parameter should specify which one to apply.
+     *                          For example, under the 'Extract Method' refactoring, there could be actions like
+     *                          'Extract to inner function in function 'x'' or 'Extract to method in class 'Y''.
+     * @param {number} startLine - The 1-based line number in the file where the refactoring range starts.
+     * @param {number} startOffset - The 1-based character offset on the start line for the refactoring range.
+     * @param {number} [endLine] - The 1-based line number where the refactoring range ends. This parameter is
+     *                             optional for FileLocationRequestArgs.
+     * @param {number} [endOffset] - The 1-based character offset on the end line for the refactoring range.
+     *                               This parameter is optional for FileLocationRequestArgs.
+     * @param {Object} [interactiveRefactorArguments] - Optional. Arguments for interactive refactor actions,
+     *                                                  providing additional information needed for these actions.
+     * @returns {Promise<Object>} A promise that resolves with the edits necessary to implement the refactoring.
+     *                            The structure of the returned object depends on the TypeScript server's response
+     *                            format for refactoring edits.
+     * @example
+     * // Example of extracting a method from a range of code in a file
+     * getEditsForRefactor('/path/to/file.ts', 'Extract Method', 'Extract to method in class "MyClass"', 5, 1, 7, 1)
+     *   .then(edits => {
+     *     console.log('Refactoring Edits:', edits);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting refactoring edits:', error);
+     *   });
+     */
+    //TODO: Write working use case with editor
+    function getEditsForRefactor(filePath, refactor, action, startLine, startOffset, endLine, endOffset, interactiveRefactorArguments) {
+        const args = endLine !== undefined && endOffset !== undefined
+            ? {startLine, startOffset, endLine, endOffset} // FileRangeRequestArgs
+            : {line: startLine, offset: startOffset}; // FileLocationRequestArgs
+
+        const command = {
+            command: "getEditsForRefactor",
+            arguments: {
+                file: filePath,
+                refactor: refactor,
+                action: action,
+                ...args,
+                interactiveRefactorArguments: interactiveRefactorArguments
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -1652,6 +1843,11 @@ function createTSServerInstance(inferredProject = true) {
         todoComments,
         docCommentTemplate,
         setCompilerOptionsForInferredProjects,
+        getCodeFixes,
+        getCombinedCodeFix,
+        getSupportedCodeFixes,
+        getApplicableRefactors,
+        getEditsForRefactor,
         exitServer
     };
 }
