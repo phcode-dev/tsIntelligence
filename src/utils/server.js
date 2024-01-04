@@ -1785,6 +1785,111 @@ function createTSServerInstance(inferredProject = true) {
     }
 
     /**
+     * Sends a 'GetMoveToRefactoringFileSuggestions' request to the TypeScript Server. This command retrieves a list of
+     * existing file paths as suggestions for moving a specific piece of code as part of a refactoring process.
+     * The function handles both single-location requests (FileLocationRequestArgs) and range-based requests (FileRangeRequestArgs).
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} startLine - The starting line number of the range or location (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} [endLine] - The ending line number of the range (1-based). Optional for single location.
+     * @param {number} [endOffset] - The ending character offset on the end line (1-based). Optional for single location.
+     * @param {string} [kind] - Optional. The kind of refactoring to apply.
+     * @returns {Promise<Object>} A promise that resolves with a list of file paths suggested for the refactoring.
+     * @example
+     * // Example usage for a range in a file
+     * getMoveToRefactoringFileSuggestions('/path/to/file.ts', 5, 1, 7, 1)
+     *   .then(suggestions => {
+     *     console.log('Refactoring File Suggestions:', suggestions);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting file suggestions for refactoring:', error);
+     *   });
+     */
+    function getMoveToRefactoringFileSuggestions(filePath, startLine, startOffset, endLine, endOffset, kind) {
+        const args = endLine !== undefined && endOffset !== undefined
+            ? {startLine, startOffset, endLine, endOffset} // FileRangeRequestArgs
+            : {line: startLine, offset: startOffset}; // FileLocationRequestArgs
+
+        const command = {
+            command: "getMoveToRefactoringFileSuggestions",
+            arguments: {
+                file: filePath,
+                ...args,
+                kind: kind
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends an 'organizeImports' request to the TypeScript Server. This command organizes the imports in a TypeScript file by:
+     *   1) Removing unused imports.
+     *   2) Coalescing imports from the same module.
+     *   3) Sorting imports.
+     * The scope of the request is limited to a single file. The function allows specifying the mode of import organization.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {string} [mode] - The mode of import organization, which can be 'All', 'SortAndCombine', or 'RemoveUnused'. Default is 'All'.
+     * @param {string} [projectFileName] - Optional. The name of the project that contains the file (e.g., path to 'tsconfig.json').
+     * @returns {Promise<Object>} A promise that resolves with an array of file code edits suggested by the TypeScript server. Each edit includes the file name and an array of text changes.
+     * @example
+     * // Organizing imports in a file with all modes
+     * organizeImports('/path/to/file.ts', 'All', '/path/to/project/tsconfig.json')
+     *   .then(edits => {
+     *     console.log('Organize Imports Edits:', edits);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error organizing imports:', error);
+     *   });
+     */
+    function organizeImports(filePath, mode = 'All', projectFileName) {
+        const command = {
+            command: "organizeImports",
+            arguments: {
+                scope: {
+                    type: "file",
+                    args: {file: filePath, projectFileName: projectFileName}
+                },
+                mode: mode
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'getEditsForFileRename' request to the TypeScript Server. This function is used to retrieve
+     * the necessary code edits required when a file is renamed. It updates import paths and references in
+     * other files within the project to reflect the new file name.
+     *
+     * @param {string} oldFilePath - The original path of the file before renaming.
+     * @param {string} newFilePath - The new path of the file after renaming.
+     * @returns {Promise} A promise that resolves with an array of file code edits. Each element in the array
+     *                    is an object containing the file name and an array of text changes. Each text change
+     *                    is an object with 'start', 'end', and 'newText' properties indicating how the text
+     *                    should be modified.
+     * @example
+     * getEditsForFileRename('/path/to/oldFile.ts', '/path/to/newFile.ts')
+     *   .then(edits => {
+     *     console.log('File Rename Edits:', edits);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting edits for file rename:', error);
+     *   });
+     */
+    function getEditsForFileRename(oldFilePath, newFilePath) {
+        const command = {
+            command: "getEditsForFileRename",
+            arguments: {
+                oldFilePath: oldFilePath,
+                newFilePath: newFilePath
+            }
+        };
+        return sendCommand(command);
+    }
+
+
+    /**
      * Terminates the TypeScript Server process.
      * Warning: Use this function with caution. Prefer using the exitServer function for a graceful shutdown.
      * @see exitServer - Sends an 'exit' command to the TypeScript Server for a graceful shutdown.
@@ -1848,6 +1953,9 @@ function createTSServerInstance(inferredProject = true) {
         getSupportedCodeFixes,
         getApplicableRefactors,
         getEditsForRefactor,
+        getMoveToRefactoringFileSuggestions,
+        organizeImports,
+        getEditsForFileRename,
         exitServer
     };
 }

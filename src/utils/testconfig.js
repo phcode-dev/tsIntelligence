@@ -200,6 +200,23 @@ export const FILES = [{
         interactiveRefactorArguments: {
             targetFile: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts'
         }
+    },
+    getMoveToRefactoringFileSuggestions: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/getMoveToRefactoringFileSuggestions.ts',
+        startLine: 3,
+        startOffset: 1,
+        endLine: 6,
+        endOffset: 1,
+        kind: ""
+
+    },
+    organizeImports: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/organizeImports.ts',
+        mode: 'All'
+    },
+    getEditsForFileRename: {
+        oldFilePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForFileRename/sample.ts',
+        newFilePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForFileRename/greetings.ts'
     }
 }, {
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
@@ -374,6 +391,23 @@ export const FILES = [{
         interactiveRefactorArguments: {
             targetFile: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForRefactor.ts'
         }
+    },
+    getMoveToRefactoringFileSuggestions: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        startLine: 62,
+        startOffset: 1,
+        endLine: 76,
+        endOffset: 3,
+        kind: ""
+
+    },
+    organizeImports: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        mode: 'All'
+    },
+    getEditsForFileRename: {
+        oldFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/fileWatcherManager.ts',
+        newFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/fileWatcherManager1.ts'
     }
 // TODO: add testcase for update and open
 }];
