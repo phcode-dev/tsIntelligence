@@ -148,5 +148,17 @@ for (let file of FILES) {
     await tsServer.openFile(file.getEditsForRefactor.filePath);
     const getEditsForRefactorResponse = await tsServer.getEditsForRefactor(file.getEditsForRefactor.filePath, file.getEditsForRefactor.refactor, file.getEditsForRefactor.action, file.getEditsForRefactor.startLine, file.getEditsForRefactor.startOffset, file.getEditsForRefactor.endLine, file.getEditsForRefactor.endOffset, file.getEditsForRefactor.interactiveRefactorArguments);
     console.log('getEditsForRefactorResponse', JSON.stringify(getEditsForRefactorResponse));
+
+    await tsServer.openFile(file.getMoveToRefactoringFileSuggestions.filePath);
+    const getMoveToRefactoringFileSuggestionsResponse = await tsServer.getMoveToRefactoringFileSuggestions(file.getMoveToRefactoringFileSuggestions.filePath, file.getMoveToRefactoringFileSuggestions.startLine, file.getMoveToRefactoringFileSuggestions.startOffset, file.getMoveToRefactoringFileSuggestions.endLine, file.getMoveToRefactoringFileSuggestions.endOffset/*,file.getMoveToRefactoringFileSuggestions.kind*/);
+    console.log('getMoveToRefactoringFileSuggestionsResponse', JSON.stringify(getMoveToRefactoringFileSuggestionsResponse));
+
+    await tsServer.openFile(file.organizeImports.filePath);
+    const organizeImportsResponse = await tsServer.organizeImports(file.organizeImports.filePath, file.organizeImports.mode);
+    console.log('organizeImportsResponse', JSON.stringify(organizeImportsResponse));
+
+    await tsServer.openFile(file.getEditsForFileRename.oldFilePath);
+    const getEditsForFileRenameResponse = await tsServer.getEditsForFileRename(file.getEditsForFileRename.oldFilePath, file.getEditsForFileRename.newFilePath);
+    console.log('getEditsForFileRenameResponse', JSON.stringify(getEditsForFileRenameResponse));
 }
 //tsServer.exitServer();
