@@ -217,8 +217,32 @@ export const FILES = [{
     getEditsForFileRename: {
         oldFilePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForFileRename/sample.ts',
         newFilePath: '/home/charly/repo/tsIntelligence/src/test/sample/getEditsForFileRename/greetings.ts'
+    },
+    selectionRange: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/selectionRange/sample.ts',
+        locations: [{line: 12, offset: 20}, {line: 13, offset: 20}]
+    },
+    toggleLineComment: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/toggleLineComment/sample.ts',
+        startLine: 1,
+        startOffset: 1,
+        endLine: 7,
+        endOffset: 1
+    },
+    prepareCallHierarchy: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/prepareCallHierarchy/sample.ts',
+        line: 17,
+        offset: 25
+    },
+    //TODO: figure out how to make it work
+    provideInlayHints: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/provideInlayHints/sample.ts',
+        start: 1181,
+        length: 3
     }
-}, {
+
+
+}, {/* Test 2*/
     filepath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
     definition: {line: 49, offset: 36},
     getDefinitionAndBoundSpan: {line: 49, offset: 36},
@@ -408,6 +432,22 @@ export const FILES = [{
     getEditsForFileRename: {
         oldFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/fileWatcherManager.ts',
         newFilePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/fileWatcherManager1.ts'
+    },
+    selectionRange: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        locations: [{line: 12, offset: 20}, {line: 13, offset: 20}]
+    },
+    toggleLineComment: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        startLine: 1,
+        startOffset: 1,
+        endLine: 7,
+        endOffset: 1
+    },
+    prepareCallHierarchy: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 35,
+        offset: 49
     }
 // TODO: add testcase for update and open
 }];
