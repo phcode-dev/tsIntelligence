@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es5",              // Specify ECMAScript target version
+    "provideInlayHints": true,
+    "module": "commonjs",         // Specify module code generation
+    "strict": true,               // Enable all strict type-checking options
+    "esModuleInterop": true,      // Enables compatibility with default imports from CommonJS modules
+    "outDir": "./dist",           // Redirect output structure to the directory
+    "baseUrl": "./",              // Base directory to resolve non-relative module names
+    "paths": {                    // Specify paths for module names
+      "*": ["node_modules/*"]
+    },
+    "skipLibCheck": true,         // Skip type checking of all declaration files (*.d.ts)
+    "forceConsistentCasingInFileNames": true // Disallow inconsistently-cased references to the same file.
+  },
+  "include": [
+    "./**/*.ts"                  // Include all TypeScript files in the project
+  ],
+  "exclude": [
+    "node_modules",              // Exclude the node_modules directory
+    "**/*.spec.ts"               // Exclude test files
+  ]
+}

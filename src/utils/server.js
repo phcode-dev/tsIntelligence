@@ -1888,6 +1888,350 @@ function createTSServerInstance(inferredProject = true) {
         return sendCommand(command);
     }
 
+    /**
+     * Sends a 'configurePlugin' request to the TypeScript Server. This command is used to configure a specific
+     * TypeScript language service plugin with provided options. The configuration can be any object structure
+     * as required by the specific plugin being configured.
+     *
+     * @param {string} pluginName - The name of the plugin to configure.
+     * @param {Object} configuration - The configuration settings for the plugin. This can be any object structure
+     *                                 depending on what the plugin accepts.
+     * @returns {Promise<void>} A promise that resolves when the plugin has been configured successfully. The promise
+     *                          does not return any value upon resolution.
+     * @example
+     * configurePlugin('myPlugin', { option1: true, option2: 'value' })
+     *   .then(() => {
+     *     console.log('Plugin configured successfully.');
+     *   })
+     *   .catch(error => {
+     *     console.error('Error configuring plugin:', error);
+     *   });
+     */
+    //TODO: Test this code and identify use cases
+    function configurePlugin(pluginName, configuration) {
+        const command = {
+            command: "configurePlugin",
+            arguments: {
+                pluginName: pluginName,
+                configuration: configuration
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a 'selectionRange' request to the TypeScript Server. This function retrieves selection range
+     * information for multiple specified locations in a TypeScript file. It is useful for features like
+     * smart selection in editors, where the selected code block can be expanded or contracted based on
+     * syntactic and semantic understanding of the code.
+     *
+     * @param {string} filePath - The path to the TypeScript file.
+     * @param {Array} locations - An array of locations in the file. Each location should be an object
+     *                            with 'line' and 'offset' properties indicating the position in the file.
+     * @returns {Promise} A promise that resolves with an array of selection range information for each
+     *                    location provided. Each element in the array is an object representing the
+     *                    selection range for that location.
+     * @example
+     * // Example of getting selection ranges for two different locations in a file
+     * selectionRange('/path/to/file.ts', [{ line: 10, offset: 15 }, { line: 12, offset: 5 }])
+     *   .then(ranges => {
+     *     console.log('Selection Ranges:', ranges);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error getting selection ranges:', error);
+     *   });
+     */
+    function selectionRange(filePath, locations) {
+        const command = {
+            command: "selectionRange",
+            arguments: {
+                file: filePath,
+                locations: locations
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Toggles line comments for a specified range in a TypeScript file.
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} startLine - The starting line number for the range (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} endLine - The ending line number for the range (1-based).
+     * @param {number} endOffset - The ending character offset on the end line (1-based).
+     * @param {string} [projectFileName] - Optional. The name of the project that contains the file.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function toggleLineComment(filePath, startLine, startOffset, endLine, endOffset, projectFileName) {
+        const command = {
+            command: "toggleLineComment",
+            arguments: {
+                file: filePath,
+                startLine: startLine,
+                startOffset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Toggles multi-line comments for a specified range in a TypeScript file.
+     * This function sends a request to `tsserver` to add or remove multi-line
+     * comments (/* ... *\/) in the specified range of the file.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} startLine - The starting line number for the range (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} endLine - The ending line number for the range (1-based).
+     * @param {number} endOffset - The ending character offset on the end line (1-based).
+     * @param {string} [projectFileName] - Optional. The name of the project that contains the file.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function toggleMultilineComment(filePath, startLine, startOffset, endLine, endOffset, projectFileName) {
+        const command = {
+            command: "toggleMultilineComment",
+            arguments: {
+                file: filePath,
+                startLine: startLine,
+                startOffset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Comments a selected range in a TypeScript file.
+     * This function sends a `CommentSelectionRequest` to `tsserver` to add line comments (//) to the specified range of the file.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} startLine - The starting line number for the selection (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} endLine - The ending line number for the selection (1-based).
+     * @param {number} endOffset - The ending character offset on the end line (1-based).
+     * @param {string} [projectFileName] - Optional. The name of the project that contains the file.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function commentSelection(filePath, startLine, startOffset, endLine, endOffset, projectFileName) {
+        const command = {
+            command: "commentSelection",
+            arguments: {
+                file: filePath,
+                startLine: startLine,
+                startOffset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Uncomments a selected range in a TypeScript file.
+     * This function sends an `UncommentSelectionRequest` to `tsserver` to remove line comments (//) from the specified range of the file.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} startLine - The starting line number for the selection (1-based).
+     * @param {number} startOffset - The starting character offset on the start line (1-based).
+     * @param {number} endLine - The ending line number for the selection (1-based).
+     * @param {number} endOffset - The ending character offset on the end line (1-based).
+     * @param {string} [projectFileName] - Optional. The name of the project that contains the file.
+     * @returns {Promise<Object>} A promise that resolves with the response from tsserver.
+     */
+    function uncommentSelection(filePath, startLine, startOffset, endLine, endOffset, projectFileName) {
+        const command = {
+            command: "uncommentSelection",
+            arguments: {
+                file: filePath,
+                startLine: startLine,
+                startOffset: startOffset,
+                endLine: endLine,
+                endOffset: endOffset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server (`tsserver`) to prepare call hierarchy information at a specific location in a TypeScript file.
+     * This feature is useful in IDEs and code editors for navigating through code and understanding
+     * call relationships within the codebase, such as finding all calls to a particular function or method.
+     *
+     * The function constructs and sends a `prepareCallHierarchy` command to `tsserver`. The command includes
+     * the file path and the position (line and offset) within the file where the call hierarchy analysis should start.
+     * The response from `tsserver` will include information about the call hierarchy at the specified position.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file where the call hierarchy preparation should start.
+     * @param {number} offset - The 1-based character offset on the specified line.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., `tsconfig.json`) that contains the TypeScript file.
+     * @returns {Promise<Object>} A promise that resolves with the call hierarchy information from `tsserver`.
+     *
+     * @example
+     * // Example of how to use prepareCallHierarchy function:
+     * prepareCallHierarchy('/path/to/yourFile.ts', 10, 15, '/path/to/tsconfig.json')
+     *   .then(response => {
+     *     console.log('Call Hierarchy Information:', response);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error in preparing call hierarchy:', error);
+     *   });
+     */
+    function prepareCallHierarchy(filePath, line, offset, projectFileName) {
+        const command = {
+            command: "prepareCallHierarchy",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to retrieve incoming call hierarchy information for a specific location in a TypeScript file.
+     * This function is utilized to identify all the calls leading to a particular symbol (function or method) at the given position.
+     *
+     * The function sends a request to `tsserver` with the file path and position details (line and offset). The response from `tsserver` includes
+     * details about each incoming call such as the caller's location and the span of the call in the source file.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file where the symbol is located.
+     * @param {number} offset - The 1-based character offset on the specified line.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., `tsconfig.json`) that contains the TypeScript file.
+     * @returns {Promise<Object>} - A promise that resolves to an object containing an array of incoming call information.
+     *                              Each element in this array represents an incoming call and includes:
+     *                              - `from`: An object representing the caller. This includes properties like:
+     *                                - `name`: Name of the caller.
+     *                                - `kind`: Kind of the caller (e.g., function, method).
+     *                                - `file`: File path where the caller is located.
+     *                                - `span`: Object representing the span of the call in the caller's file.
+     *                                - `selectionSpan`: Object representing the span of the symbol being called.
+     *                                - Additional properties as per the `CallHierarchyItem` interface.
+     *                              - `fromSpans`: An array of objects, each representing the span of the call in the caller's source file.
+     * @example
+     * // How to use provideCallHierarchyIncomingCalls function:
+     * provideCallHierarchyIncomingCalls('/path/to/yourFile.ts', 10, 15, '/path/to/tsconfig.json')
+     *   .then(response => {
+     *     console.log('Incoming Call Hierarchy Information:', response);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error in getting incoming call hierarchy:', error);
+     *   });
+     */
+
+    function provideCallHierarchyIncomingCalls(filePath, line, offset, projectFileName) {
+        const command = {
+            command: "provideCallHierarchyIncomingCalls",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to retrieve outgoing call hierarchy information for a specific location in a TypeScript file.
+     * This function is used to identify all the calls made from a particular symbol (function or method) at the given position.
+     *
+     * The function constructs a command object with the file path, line number, character offset, and optional project file name, and sends it
+     * to `tsserver`. The server then responds with details about each outgoing call from the specified symbol. These details include the callee's
+     * location and the text spans of the call in the source file.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file where the symbol is located.
+     * @param {number} offset - The 1-based character offset on the specified line.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., `tsconfig.json`) that contains the TypeScript file.
+     * @returns {Promise<Object>} A promise that resolves to an object containing an array of outgoing call information. Each element in this array
+     *                            is an object representing an outgoing call and includes:
+     *                            - `to`: An object representing the callee, detailed as:
+     *                              - `name`: String. The name of the callee.
+     *                              - `kind`: String. The kind of the callee, as per ScriptElementKind (e.g., 'function', 'method', 'class').
+     *                              - `kindModifiers`: String. Optional. Modifiers of the callee kind (e.g., 'public', 'static').
+     *                              - `file`: String. The file path where the callee is located.
+     *                              - `span`: TextSpan. The text span representing the span of the callee's declaration in its file.
+     *                              - `selectionSpan`: TextSpan. The text span representing the symbol's selection span.
+     *                              - `containerName`: String. Optional. The name of the container (e.g., class or namespace) of the callee.
+     *                            - `fromSpans`: Array of TextSpan. Each TextSpan represents the span of the call in the source file.
+     * @example
+     * // Example usage of provideCallHierarchyOutgoingCalls function:
+     * provideCallHierarchyOutgoingCalls('/path/to/yourFile.ts', 10, 15, '/path/to/tsconfig.json')
+     *   .then(response => {
+     *     console.log('Outgoing Call Hierarchy Information:', response);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error in getting outgoing call hierarchy:', error);
+     *   });
+     */
+    function provideCallHierarchyOutgoingCalls(filePath, line, offset, projectFileName) {
+        const command = {
+            command: "provideCallHierarchyOutgoingCalls",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to provide inlay hints for a specific range within a TypeScript file.
+     * Inlay hints are annotations displayed inline in the code, providing additional information such as type hints,
+     * parameter names, or enum values. This function enhances code readability by revealing implicit code aspects directly in the editor.
+     *
+     * The function constructs a command object specifying the file path, start position, and span length for which inlay hints are desired.
+     * The request is sent to `tsserver`, and the server's response includes an array of inlay hints, each detailing the hint's content and location.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file for which inlay hints are requested.
+     * @param {number} start - The start position in the file (character count from the beginning) for the range to retrieve hints.
+     * @param {number} length - The length of the range (in characters) for which hints should be provided.
+     * @param {string} [projectFileName] - Optional. The path to the project file (e.g., `tsconfig.json`) associated with the TypeScript file.
+     * @returns {Promise<Object>} - A promise that resolves to an object containing:
+     *                              - `body`: An array of objects, each representing an inlay hint with the following properties:
+     *                                - `text`: The text of the inlay hint (string).
+     *                                - `position`: The position within the file where the hint is located, specified as an object with line and character properties.
+     *                                - `kind`: The kind of the inlay hint (string), such as 'Type', 'Parameter', or 'Enum'.
+     *                                - `whitespaceBefore`: Optional boolean indicating if whitespace should precede the hint.
+     *                                - `whitespaceAfter`: Optional boolean indicating if whitespace should follow the hint.
+     *                                - `displayParts`: Optional array of objects representing additional parts of the hint, each with `text` and optionally `span`.
+     * @example
+     * // Example usage of provideInlayHints function:
+     * provideInlayHints('/path/to/yourFile.ts', 0, 500, '/path/to/tsconfig.json')
+     *   .then(response => {
+     *     console.log('Inlay Hints:', response.body);
+     *   })
+     *   .catch(error => {
+     *     console.error('Error in getting inlay hints:', error);
+     *   });
+     */
+    //TODO : figure out how to make it work
+    function provideInlayHints(filePath, start, length, projectFileName) {
+        const command = {
+            command: "provideInlayHints",
+            arguments: {
+                file: filePath,
+                start: start,
+                length: length,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
 
     /**
      * Terminates the TypeScript Server process.
@@ -1956,6 +2300,16 @@ function createTSServerInstance(inferredProject = true) {
         getMoveToRefactoringFileSuggestions,
         organizeImports,
         getEditsForFileRename,
+        configurePlugin,
+        selectionRange,
+        toggleLineComment,
+        toggleMultilineComment,
+        commentSelection,
+        uncommentSelection,
+        prepareCallHierarchy,
+        provideCallHierarchyIncomingCalls,
+        provideCallHierarchyOutgoingCalls,
+        provideInlayHints,
         exitServer
     };
 }

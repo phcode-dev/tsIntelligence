@@ -160,5 +160,34 @@ for (let file of FILES) {
     await tsServer.openFile(file.getEditsForFileRename.oldFilePath);
     const getEditsForFileRenameResponse = await tsServer.getEditsForFileRename(file.getEditsForFileRename.oldFilePath, file.getEditsForFileRename.newFilePath);
     console.log('getEditsForFileRenameResponse', JSON.stringify(getEditsForFileRenameResponse));
+
+    await tsServer.openFile(file.selectionRange.filePath);
+    const selectionRangeResponse = await tsServer.selectionRange(file.selectionRange.filePath, file.selectionRange.locations);
+    console.log('selectionRangeResponse', JSON.stringify(selectionRangeResponse));
+
+    await tsServer.openFile(file.toggleLineComment.filePath);
+    const toggleLineCommentResponse = await tsServer.toggleLineComment(file.toggleLineComment.filePath, file.toggleLineComment.startLine, file.toggleLineComment.startOffset, file.toggleLineComment.endLine, file.toggleLineComment.endOffset);
+    console.log('toggleLineCommentResponse', JSON.stringify(toggleLineCommentResponse));
+
+    const toggleMultilineCommentResponse = await tsServer.toggleMultilineComment(file.toggleLineComment.filePath, file.toggleLineComment.startLine, file.toggleLineComment.startOffset, file.toggleLineComment.endLine, file.toggleLineComment.endOffset);
+    console.log('toggleMultilineCommentResponse', JSON.stringify(toggleMultilineCommentResponse));
+
+    const commentSelectionResponse = await tsServer.commentSelection(file.toggleLineComment.filePath, file.toggleLineComment.startLine, file.toggleLineComment.startOffset, file.toggleLineComment.endLine, file.toggleLineComment.endOffset);
+    console.log('commentSelectionResponse', JSON.stringify(commentSelectionResponse));
+
+    const uncommentSelectionResponse = await tsServer.uncommentSelection(file.toggleLineComment.filePath, file.toggleLineComment.startLine, file.toggleLineComment.startOffset, file.toggleLineComment.endLine, file.toggleLineComment.endOffset);
+    console.log('uncommentSelectionResponse', JSON.stringify(uncommentSelectionResponse));
+
+    await tsServer.openFile(file.prepareCallHierarchy.filePath);
+    const prepareCallHierarchyResponse = await tsServer.prepareCallHierarchy(file.prepareCallHierarchy.filePath, file.prepareCallHierarchy.line, file.prepareCallHierarchy.offset);
+    console.log('prepareCallHierarchyResponse', JSON.stringify(prepareCallHierarchyResponse));
+
+    await tsServer.openFile(file.prepareCallHierarchy.filePath);
+    const provideCallHierarchyIncomingCallsResponse = await tsServer.provideCallHierarchyIncomingCalls(file.prepareCallHierarchy.filePath, file.prepareCallHierarchy.line, file.prepareCallHierarchy.offset);
+    console.log('provideCallHierarchyIncomingCallsResponse', JSON.stringify(provideCallHierarchyIncomingCallsResponse));
+
+    await tsServer.openFile(file.prepareCallHierarchy.filePath);
+    const provideCallHierarchyOutgoingCallsResponse = await tsServer.provideCallHierarchyOutgoingCalls(file.prepareCallHierarchy.filePath, file.prepareCallHierarchy.line, file.prepareCallHierarchy.offset);
+    console.log('provideCallHierarchyOutgoingCallsResponse', JSON.stringify(provideCallHierarchyOutgoingCallsResponse));
 }
 //tsServer.exitServer();
