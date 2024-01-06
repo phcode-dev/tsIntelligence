@@ -1,24 +1,23 @@
-# TypeScript Server Instance Project
 
-A robust project for managing and interacting with a TypeScript Server (TSServer). It includes an extensive array of functionalities such as file manipulation, code analysis, formatting, refactoring, and more, making it an ideal starting point for any TypeScript project requiring direct interaction with TSServer.
+# TypeScript Server (TSserver) Documentation Project
 
-## Code Guardian
-[![TSServer Instance build verification](https://github.com/aicore/template-nodejs/actions/workflows/build_verify.yml/badge.svg)](https://github.com/aicore/template-nodejs/actions/workflows/build_verify.yml)
+TSserver is a powerful tool that enhances TypeScript coding and project management. However, we recognize that the lack of human-readable documentation can be a barrier to effectively utilizing its full potential. To address this challenge, our project focuses on generating simple, accessible JSDoc documentation. Our goal is to make TSserver more user-friendly, allowing anyone to leverage its capabilities without the need to decipher complex TypeScript code syntaxes.
 
-# Commands available
+## Project Objective
 
-## Initialization
-To initialize the TypeScript Server:
-```shell
-> npm install   // do this only once.
-> node -e 'require("./path-to-createTSServerInstance").init()'
-# Usage and Examples
+Our main objective is to transform the complex and cryptic syntaxes of TSserver into easy-to-understand documentation. We aim to provide clear, concise, and practical guides that cater to both beginners and experienced TypeScript developers.
 
-This TypeScript Server (TSServer) Instance project provides a wide range of functionalities to interact with TypeScript Server. Below are examples of how you can use these functionalities.
+## Getting Started
 
-## Initialization
+To get started with TSserver using our JSDoc documentation:
 
-Before you start, make sure to initialize the TypeScript Server:
+- Open the `utils/server.js` file in your project.
+- View the JSDoc comments above each function to understand their usage and capabilities.
 
-```javascript
-const tsServer = require('./path-to-createTSServerInstance').init();
+## Contributing
+
+We welcome contributions to improve and expand the documentation. If you have insights, examples, or enhancements, please feel free to contribute. Check out our [Contributing Guide](CONTRIBUTING.md) for guidelines on how to make submissions.
+
+## License
+
+This documentation project is open-source and available under the [AGPL License](LICENSE).
