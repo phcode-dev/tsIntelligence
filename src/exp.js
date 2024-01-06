@@ -189,5 +189,25 @@ for (let file of FILES) {
     await tsServer.openFile(file.prepareCallHierarchy.filePath);
     const provideCallHierarchyOutgoingCallsResponse = await tsServer.provideCallHierarchyOutgoingCalls(file.prepareCallHierarchy.filePath, file.prepareCallHierarchy.line, file.prepareCallHierarchy.offset);
     console.log('provideCallHierarchyOutgoingCallsResponse', JSON.stringify(provideCallHierarchyOutgoingCallsResponse));
+
+    await tsServer.openFile(file.getLinkedEditingRange.filePath);
+    const getLinkedEditingRangeResponse = await tsServer.getLinkedEditingRange(file.getLinkedEditingRange.filePath, file.getLinkedEditingRange.line, file.getLinkedEditingRange.offset);
+    console.log('getLinkedEditingRangeResponse', JSON.stringify(getLinkedEditingRangeResponse));
+
+    await tsServer.openFile(file.braceCommand.filePath);
+    const braceCommandResponse = await tsServer.braceCommand(file.braceCommand.filePath, file.braceCommand.line, file.braceCommand.offset);
+    console.log('braceCommandResponse', JSON.stringify(braceCommandResponse));
+
+    // TODO: see working and non-working use case
+    await tsServer.openFile(file.braceCommand.filePath);
+    const braceCompletionResponse = await tsServer.braceCompletion(file.braceCommand.filePath, file.braceCommand.line + 1, file.braceCommand.offset, 'a');
+    console.log('braceCompletionResponse', JSON.stringify(braceCompletionResponse));
+
+    await tsServer.openFile(file.braceCommand.filePath);
+    const getSpanOfEnclosingCommentResponse = await tsServer.getSpanOfEnclosingComment(file.getSpanOfEnclosingComment.filePath, file.getSpanOfEnclosingComment.line, file.getSpanOfEnclosingComment.offset, file.getSpanOfEnclosingComment.onlyMultiLine);
+    console.log('getSpanOfEnclosingCommentResponse', JSON.stringify(getSpanOfEnclosingCommentResponse));
 }
-//tsServer.exitServer();
+/*
+tsServer.exitServer();
+tsServer.killServer();
+*/
