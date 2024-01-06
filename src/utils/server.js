@@ -2232,6 +2232,173 @@ function createTSServerInstance(inferredProject = true) {
         return sendCommand(command);
     }
 
+    /**
+     * Sends a watch change request to the TypeScript Server.
+     * This function is used to notify the server about file changes.
+     *
+     * @param {number} id - The identifier for the watch request.
+     * @param {string} path - The path to the file that has changed.
+     * @param {"create" | "delete" | "update"} eventType - The type of change event.
+     */
+    // TODO see why unknown json command response is returned from server
+    function sendWatchChangeRequest(id, path, eventType) {
+        const command = {
+            command: "watchChange",
+            arguments: {
+                id: id,
+                path: path,
+                eventType: eventType
+            }
+        };
+
+        // Assuming sendCommand is a function that sends a command to tsserver
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server (TSServer) to automatically insert a JSX closing tag in a JSX/TSX file.
+     * This function is particularly useful in development environments or editors that support JSX/TSX syntax, as it
+     * automates the process of closing tag insertion.
+     *
+     * The function returns a promise. When resolved successfully, the promise provides an object with details about the
+     * inserted closing tag. This object contains the `newText` (the closing tag text) and `caretOffset` (the position where
+     * the caret should be placed after insertion). If the request fails, the promise is rejected with the error details.
+     *
+     * @param {string} filePath - The absolute path to the JSX/TSX file where the closing tag will be inserted.
+     * @param {number} line - The 1-based line number in the file where the closing tag should be inserted. Typically, this
+     *                        is the line with the corresponding opening JSX tag.
+     * @param {number} offset - The 1-based character offset on the specified line for the closing tag insertion.
+     * @returns {Promise<{newText: string, caretOffset: number}>} A promise that resolves with an object containing:
+     *                   - `newText`: String. The text of the inserted JSX closing tag.
+     *                   - `caretOffset`: Number. The position in the newText where the caret should be placed after insertion.
+     *                   If the operation fails, the promise is rejected with an error.
+     *
+     * @example
+     * // Example usage of jsxClosingTag:
+     * jsxClosingTag('/path/to/component.tsx', 10, 5)
+     *   .then(response => console.log('JSX Closing Tag Inserted:', response))
+     *   .catch(error => console.error('Error inserting JSX Closing Tag:', error));
+     */
+    function jsxClosingTag(filePath, line, offset) {
+        const command = {
+            command: "jsxClosingTag",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset
+            }
+        };
+
+        // Return the promise created by sendCommand
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to obtain linked editing ranges for a specific location in a JSX/TSX file.
+     * Linked editing ranges are useful for scenarios like editing paired tags, where changing one tag automatically updates the corresponding tag.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file.
+     * @param {number} offset - The 1-based character offset in the line.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., tsconfig.json) that contains the TypeScript file.
+     * @returns {Promise<Object>} A promise that resolves with linked editing range information from the TypeScript server.
+     * The response includes:
+     *  - `ranges`: Array of range objects (each range has `start` and `end` locations).
+     *  - `wordPattern`: Optional regular expression pattern describing the allowable contents of the range.
+     */
+    function getLinkedEditingRange(filePath, line, offset, projectFileName) {
+        const command = {
+            command: "linkedEditingRange",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                projectFileName: projectFileName
+            }
+        };
+
+        return sendCommand(command);
+    }
+
+
+    /**
+     * Sends a "brace" command to the TypeScript Server to find the matching braces in the file at a specified location.
+     * The function expects the absolute path of the file, along with the line number and character offset of the location.
+     * It returns the locations of matching braces found in the file.
+     *
+     * @param {string} filePath - The absolute path to the file.
+     * @param {number} line - The 1-based line number in the file.
+     * @param {number} offset - The 1-based character offset in the line.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., tsconfig.json) that contains the TypeScript file.
+     * @returns {Promise<Object>} A promise that resolves with an array of TextSpan objects, each representing a span of text where a matching brace is found.
+     */
+
+    function braceCommand(filePath, line, offset, projectFileName) {
+        const command = {
+            command: "brace",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                projectFileName: projectFileName
+            }
+        };
+
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a "braceCompletion" command to the TypeScript Server to determine if automatic brace completion is appropriate at a specified location.
+     * This function is particularly useful for editor features like auto-inserting the corresponding closing brace when an opening brace is typed.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file where the opening brace was typed.
+     * @param {number} line - The 1-based line number in the file where the opening brace was typed.
+     * @param {number} offset - The 1-based character offset in the line just after the opening brace.
+     * @param {string} openingBrace - The kind of opening brace (e.g., '{', '(', '[') for which completion is being requested.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., tsconfig.json) associated with the TypeScript file.
+     * @returns {Promise<Object>} - A promise that resolves with the server's response. The structure of the response depends on the implementation in TSServer.
+     *                              Typically, it might include a boolean indicating whether the closing brace should be automatically inserted.
+     */
+    // TODO: see working and non-working use case
+    function braceCompletion(filePath, line, offset, openingBrace, projectFileName) {
+        const command = {
+            command: "braceCompletion",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                openingBrace: openingBrace,
+                projectFileName: projectFileName
+            }
+        };
+        return sendCommand(command);
+    }
+
+    /**
+     * Sends a request to the TypeScript Server to determine if the caret is inside a comment, and if so, retrieves the span of the enclosing comment.
+     * The function checks for comments at a specific location in a TypeScript file and returns the comment span if found.
+     *
+     * @param {string} filePath - The absolute path to the TypeScript file.
+     * @param {number} line - The 1-based line number in the file where the caret is located.
+     * @param {number} offset - The 1-based character offset (column number) in the line where the caret is located.
+     * @param {boolean} onlyMultiLine - If true, the function requires that the enclosing span be a multi-line comment. Otherwise, the request returns undefined.
+     * @param {string} [projectFileName] - Optional. The name of the project file (e.g., tsconfig.json) that contains the TypeScript file.
+     * @returns {Promise<Object>} A promise that resolves with an object containing the span of the enclosing comment. The object has properties 'start' and 'end', each an object with 'line' and 'offset'. If no enclosing comment is found, or if the comment is not multi-line when 'onlyMultiLine' is true, the result is undefined.
+     */
+    function getSpanOfEnclosingComment(filePath, line, offset, onlyMultiLine, projectFileName) {
+        const command = {
+            command: "getSpanOfEnclosingComment",
+            arguments: {
+                file: filePath,
+                line: line,
+                offset: offset,
+                onlyMultiLine: onlyMultiLine,
+                projectFileName: projectFileName
+            }
+        };
+
+        return sendCommand(command);
+    }
 
     /**
      * Terminates the TypeScript Server process.
@@ -2310,6 +2477,12 @@ function createTSServerInstance(inferredProject = true) {
         provideCallHierarchyIncomingCalls,
         provideCallHierarchyOutgoingCalls,
         provideInlayHints,
+        sendWatchChangeRequest,
+        jsxClosingTag,
+        getLinkedEditingRange,
+        braceCommand,
+        braceCompletion,
+        getSpanOfEnclosingComment,
         exitServer
     };
 }

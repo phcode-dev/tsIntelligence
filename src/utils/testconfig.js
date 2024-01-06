@@ -239,6 +239,32 @@ export const FILES = [{
         filePath: '/home/charly/repo/tsIntelligence/src/test/sample/provideInlayHints/sample.ts',
         start: 1181,
         length: 3
+    },
+    sendWatchChangeRequest: {
+        path: '/home/charly/repo/tsIntelligence/src/exp.js',
+        id: 1,
+        eventType: "update"
+    },
+    jsxClosingTag: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/jsxClosingTag/src/JSXFile.tsx',
+        line: 5,
+        offset: 10
+    },
+    getLinkedEditingRange: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/getLinkedEditingRange/sample.tsx',
+        line: 13,
+        offset: 19
+    },
+    braceCommand: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 8,
+        offset: 25
+    },
+    getSpanOfEnclosingComment: {
+        filePath: '/home/charly/repo/tsIntelligence/src/exp.js',
+        line: 128,
+        offset: 7,
+        onlyMultiLine: true
     }
 
 
@@ -448,6 +474,23 @@ export const FILES = [{
         filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
         line: 35,
         offset: 49
+    },
+    getLinkedEditingRange: {
+        filePath: '/home/charly/repo/tsIntelligence/src/test/sample/jsxClosingTag/src/JSXFile.tsx',
+        line: 6,
+        offset: 14
+    },
+    braceCommand: {
+        filePath: '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 21,
+        offset: 12
+    },
+    getSpanOfEnclosingComment: {
+        filePath:  '/home/charly/repo/vscode/extensions/typescript-language-features/web/src/webServer.ts',
+        line: 1,
+        offset: 4,
+        onlyMultiLine: true
     }
+
 // TODO: add testcase for update and open
 }];
