@@ -1,6 +1,70 @@
-# TypeScript Language Server Client
+# TypeScript Language Server Integration
 
-A Node.js CLI tool for getting TypeScript/JavaScript code completions using the Language Server Protocol (LSP), inspired by Zed editor's implementation.
+## Overview
+
+This experiments folder explores TypeScript/JavaScript code completions and language features using the Language Server Protocol
+(LSP).
+
+## Experiments
+
+### TypeScript Language Server
+
+We have a working implementation in the `experiments` folder that uses the Language Server Protocol with
+[typescript-language-server](https://github.com/typescript-language-server/typescript-language-server). This approach,
+inspired by Zed editor's implementation, proved to be more straightforward and effective than alternatives.
+
+The experiment demonstrates:
+
+-   Functional code completions for JavaScript and TypeScript files
+-   Property access completion with proper context
+-   Integration with project-specific TypeScript installations
+-   Robust message handling for LSP communication
+
+See the [experiments README](./experiments/README.md) for implementation details and lessons learned.
+
+### Alternative Approaches
+
+We also investigated using the TypeScript server directly, based on VS Code's TypeScript implementation. However, this
+approach proved unnecessarily complex compared to the LSP-based solution. The typescript-language-server abstraction
+provided a cleaner interface while maintaining all the functionality we needed.
+
+## Key Challenges Solved
+
+One of the main problems we encountered was getting relevant code hints. The language service initially returned either:
+
+1. Too many irrelevant completions without proper context
+2. No completions at all in certain scenarios (particularly with property access)
+
+The critical fix was properly specifying trigger characters and trigger kinds in completion requests. See the
+documentation below for details on this and other challenges we overcame.
+
+## Phoenix Code Integration Recommendations
+
+Based on our findings, here are the recommendations for integrating with Phoenix Code:
+
+1. The existing Brackets LSP code in Phoenix Code already handles most cases for:
+
+    - Code completions
+    - Jump to definition/declarations
+    - Hover information
+    - Other language features
+
+2. For integration, the main work needed is:
+    - Implement Node.js connectors in Phoenix Code
+    - Configure communication with the TypeScript language server
+    - Ensure proper trigger character handling for completions
+
+The existing LSP infrastructure in Phoenix Code provides a solid foundation, and with proper connections to the
+TypeScript language server, you should be able to achieve full functionality without significant architectural changes.
+
+# Getting Started
+
+See the docs below for setup instructions and example usage of the prototype implementation.
+
+## TypeScript Language Server Client
+
+A Node.js CLI tool for getting TypeScript/JavaScript code completions using the Language Server Protocol (LSP), inspired
+by Zed editor's implementation.
 
 ## Quick Start
 
@@ -13,19 +77,20 @@ node lsp.js /path/to/project /path/to/file.js 10:15
 ```
 
 Where:
-- `/path/to/project` is the root directory of your project
-- `/path/to/file.js` is the specific file you want completions for
-- `10:15` is the line and character position (zero-based) where you want completions
+
+-   `/path/to/project` is the root directory of your project
+-   `/path/to/file.js` is the specific file you want completions for
+-   `10:15` is the line and character position (zero-based) where you want completions
 
 ## Key Features
 
-- Works with JavaScript, TypeScript, JSX, and TSX files
-- Automatically detects project configuration (tsconfig.json/jsconfig.json)
-- Uses locally installed TypeScript if available
-- Falls back to typescript-language-server's bundled TypeScript if needed
-- Provides proper property completions for imported modules
-- Robust message handling for LSP communication
-- Timeouts to prevent hanging on incomplete responses
+-   Works with JavaScript, TypeScript, JSX, and TSX files
+-   Automatically detects project configuration (tsconfig.json/jsconfig.json)
+-   Uses locally installed TypeScript if available
+-   Falls back to typescript-language-server's bundled TypeScript if needed
+-   Provides proper property completions for imported modules
+-   Robust message handling for LSP communication
+-   Timeouts to prevent hanging on incomplete responses
 
 ## Common Challenges and Solutions
 
@@ -34,10 +99,11 @@ Where:
 **Challenge**: The Language Server Protocol uses a specific message format with headers and JSON body.
 
 **Solution**: Implemented proper binary buffer handling with Content-Length parsing:
+
 ```javascript
 // Format for sending
 const jsonMessage = JSON.stringify(message);
-const contentLength = Buffer.byteLength(jsonMessage, 'utf8');
+const contentLength = Buffer.byteLength(jsonMessage, "utf8");
 const header = `Content-Length: ${contentLength}\r\n\r\n`;
 serverProcess.stdin.write(header + jsonMessage);
 
@@ -50,6 +116,7 @@ serverProcess.stdin.write(header + jsonMessage);
 **Challenge**: LSP has two types of messages (requests that need responses and notifications that don't).
 
 **Solution**: Implemented separate methods for each type:
+
 ```javascript
 // For requests (require response)
 sendRequest: function(method, params) {
@@ -67,6 +134,7 @@ sendNotification: function(method, params) {
 **Challenge**: The server sometimes sends very large messages that can cause the client to hang.
 
 **Solution**: Implemented binary buffer handling with progress tracking and timeouts:
+
 ```javascript
 // Binary buffer concatenation
 buffer = Buffer.concat([buffer, chunk]);
@@ -77,7 +145,7 @@ const percentComplete = ((buffer.length / contentLength) * 100).toFixed(1);
 // Timeout mechanism for completion requests
 const completionPromise = getCompletions(server, documentUri, line, character);
 const timeoutPromise = new Promise((_, reject) =>
-  setTimeout(() => reject(new Error('Completion request timed out')), 10000)
+    setTimeout(() => reject(new Error("Completion request timed out")), 10000)
 );
 ```
 
@@ -85,20 +153,24 @@ const timeoutPromise = new Promise((_, reject) =>
 
 **Challenge**: Code completions for imported modules weren't working initially.
 
-**Solution**: While we implemented a `syncRelatedFiles` function to provide context to the language server, we discovered that this wasn't actually the main issue. The key fix was properly specifying the trigger character (see below).
+**Solution**: While we implemented a `syncRelatedFiles` function to provide context to the language server, we
+discovered that this wasn't actually the main issue. The key fix was properly specifying the trigger character (see
+below).
 
-**Note**: The file syncing code is currently prepared but may not be necessary in most cases as long as the trigger character is correctly specified:
+**Note**: The file syncing code is currently prepared but may not be necessary in most cases as long as the trigger
+character is correctly specified:
 
 ```javascript
 // Find and open all related files in the directory
 async function syncRelatedFiles(server, projectRoot, targetFile) {
-  // Opens JS/TS files in the same directory
+    // Opens JS/TS files in the same directory
 }
 ```
 
 ### 5. Completion Parameters and Trigger Characters
 
-**Challenge**: Property completions for object members weren't showing up at all. For example, with code like `config.se<cursor>rver.port`, no completions were being returned, even though VS Code would show property suggestions.
+**Challenge**: Property completions for object members weren't showing up at all. For example, with code like
+`config.se<cursor>rver.port`, no completions were being returned, even though VS Code would show property suggestions.
 
 **Solution**: Adding the correct trigger character (".") to completion requests was critical:
 
@@ -121,27 +193,28 @@ async function syncRelatedFiles(server, projectRoot, targetFile) {
 ```
 
 **Important**: The trigger character should match the character that triggered the completion:
-- For property access (`config.se<cursor>rver`), the trigger character should be "."
-- For regular identifier completions (`con<cursor>fig`), you should omit the trigger character
-- Using the wrong trigger character can result in irrelevant completions or no completions at all
+
+-   For property access (`config.se<cursor>rver`), the trigger character should be "."
+-   For regular identifier completions (`con<cursor>fig`), you should omit the trigger character
+-   Using the wrong trigger character can result in irrelevant completions or no completions at all
 
 This was the single most important fix that made property completions work correctly.
-
 
 ### 6. TypeScript Detection
 
 **Challenge**: Needed to detect and use the local project's TypeScript installation.
 
 **Solution**: Checked common installation paths and provided fallbacks:
+
 ```javascript
 // Check for TypeScript in common locations
-const yarnTsPath = path.join(projectPath, '.yarn/sdks/typescript/lib');
-const npmTsPath = path.join(projectPath, 'node_modules/typescript/lib');
+const yarnTsPath = path.join(projectPath, ".yarn/sdks/typescript/lib");
+const npmTsPath = path.join(projectPath, "node_modules/typescript/lib");
 
 if (fs.existsSync(yarnTsPath)) {
-  tsdk = '.yarn/sdks/typescript/lib';
+    tsdk = ".yarn/sdks/typescript/lib";
 } else if (fs.existsSync(npmTsPath)) {
-  tsdk = 'node_modules/typescript/lib';
+    tsdk = "node_modules/typescript/lib";
 }
 ```
 
@@ -150,6 +223,7 @@ if (fs.existsSync(yarnTsPath)) {
 ### Trigger Kinds
 
 The LSP defines three trigger kinds for completion requests:
+
 1. **Invoked (1)**: Manual completion (Ctrl+Space)
 2. **TriggerCharacter (2)**: Automatic completion after typing a specific character
 3. **TriggerForIncompleteCompletions (3)**: Request for more items from a previous result
@@ -158,22 +232,24 @@ The LSP defines three trigger kinds for completion requests:
 
 Common trigger characters in TypeScript/JavaScript and when to use them:
 
-| Character | Context | Example | When to Include |
-|-----------|---------|---------|----------------|
-| `.` | Property access | `object.prop` | When completing properties after a dot |
-| `"`, `'` | String literals/imports | `import "./` | When completing paths in quotes |
-| `/` | Path completions | `import "./folder/` | When completing folders/files |
-| `@` | Decorators | `@Decorator` | When completing TypeScript decorators |
-| `<` | JSX tags | `<Component` | When completing JSX/TSX tags |
-| `(` | Function calls | `function(` | When completing function parameters |
-| `[` | Bracket notation | `object[` | When completing key access |
-| (none) | Regular identifiers | `cons` | When completing variable/function names |
+| Character | Context                 | Example             | When to Include                         |
+| --------- | ----------------------- | ------------------- | --------------------------------------- |
+| `.`       | Property access         | `object.prop`       | When completing properties after a dot  |
+| `"`, `'`  | String literals/imports | `import "./`        | When completing paths in quotes         |
+| `/`       | Path completions        | `import "./folder/` | When completing folders/files           |
+| `@`       | Decorators              | `@Decorator`        | When completing TypeScript decorators   |
+| `<`       | JSX tags                | `<Component`        | When completing JSX/TSX tags            |
+| `(`       | Function calls          | `function(`         | When completing function parameters     |
+| `[`       | Bracket notation        | `object[`           | When completing key access              |
+| (none)    | Regular identifiers     | `cons`              | When completing variable/function names |
 
-**Important**: Do not include a trigger character for regular identifier completions - it will filter results incorrectly. Only include the trigger character that was actually typed by the user to trigger the completion.
+**Important**: Do not include a trigger character for regular identifier completions - it will filter results
+incorrectly. Only include the trigger character that was actually typed by the user to trigger the completion.
 
 ## Next Steps
 
 Potential improvements:
+
 1. Add support for document changes (editing files)
 2. Implement completion item resolution for more details
 3. Add signature help support
@@ -184,6 +260,6 @@ Potential improvements:
 
 ## References
 
-- [Language Server Protocol Specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/)
-- [TypeScript Language Server](https://github.com/typescript-language-server/typescript-language-server)
-- [Zed Editor's TypeScript LSP implementation](https://github.com/zed-industries/zed/blob/148131786f5b15e8fdcb9e550abbf9edfd3dd0f8/crates/project/src/lsp_command.rs#L2035)
+-   [Language Server Protocol Specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/)
+-   [TypeScript Language Server](https://github.com/typescript-language-server/typescript-language-server)
+-   [Zed Editor's TypeScript LSP implementation](https://github.com/zed-industries/zed/blob/148131786f5b15e8fdcb9e550abbf9edfd3dd0f8/crates/project/src/lsp_command.rs#L2035)
